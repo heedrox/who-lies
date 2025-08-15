@@ -1,0 +1,22 @@
+{
+  "name": "who-lies",
+  "version": "1.0.0",
+  "description": "Murder Mystery Game - WHO LIES",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server web --port=3000 --open=/index.html",
+    "start": "live-server web --port=3000",
+    "build": "echo 'Build completed'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "game",
+    "murder-mystery",
+    "who-lies"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
