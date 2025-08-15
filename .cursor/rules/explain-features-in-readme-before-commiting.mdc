@@ -1,5 +1,5 @@
 ---
-description: Before doing commit and push of new features
+description: Just before (or when) doing commit and push of new features
 alwaysApply: false
 ---
 Always update README.md to specify added features.
