@@ -82,11 +82,14 @@ Este proyecto nació de una conversación de desarrollo donde se conceptualizó 
 4. **Entorno de desarrollo**: Configuración completa con Node.js 20 y npm scripts
 5. **Sistema de jugadores**: Distribución aleatoria en estancias con parámetros de URL
 6. **Preparación para BD**: Estructura de datos lista para integración con NoSQL
+7. **Sistema de autenticación**: Firebase con login anónimo para gestión de sesiones
+8. **Interfaz de usuario**: Sistema de login/logout con transiciones suaves
 
 ## 🚀 Requisitos del sistema
 
 - **Node.js**: Versión 20.x (recomendado 20.18.3+)
 - **npm**: Versión 10.x (recomendado 10.8.2+)
+- **Firebase**: Proyecto configurado con Authentication habilitado
 
 ## 📦 Instalación
 
@@ -110,6 +113,15 @@ nvm use 20
 ```bash
 npm install
 ```
+
+### 4. Configurar Firebase
+```bash
+# Crear proyecto en Firebase Console
+# Habilitar Authentication → Anonymous
+# Copiar configuración a web/firebase-config.js
+```
+
+**Ver archivo `FIREBASE_SETUP.md` para instrucciones detalladas.**
 
 ## 🛠️ Desarrollo
 
@@ -158,17 +170,21 @@ La nueva funcionalidad se ejecuta automáticamente cuando:
 - **Gestión de paquetes**: npm
 - **Entorno**: Node.js 20
 - **Lógica de juego**: Algoritmos de distribución aleatoria y validación de reglas
+- **Backend**: Firebase (Authentication, Firestore)
+- **Autenticación**: Sistema de login anónimo con gestión de sesiones
 
 ## 📁 Estructura del proyecto
 
 ```
 who-lies/
 ├── web/
-│   └── index.html      # Interfaz principal del juego
-├── package.json         # Dependencias y scripts
-├── firebase.json        # Configuración de Firebase
-├── README.md           # Este archivo
-└── node_modules/       # Dependencias (generado automáticamente)
+│   ├── index.html           # Interfaz principal del juego
+│   └── firebase-config.js   # Configuración de Firebase
+├── package.json              # Dependencias y scripts
+├── firebase.json             # Configuración de Firebase
+├── FIREBASE_SETUP.md         # Guía de configuración de Firebase
+├── README.md                 # Este archivo
+└── node_modules/             # Dependencias (generado automáticamente)
 ```
 
 ## 🎮 Características del juego
@@ -182,6 +198,9 @@ who-lies/
 - **Sistema de rondas** con botón "TERMINAR RONDA"
 - **Distribución aleatoria de jugadores** en estancias
 - **Sistema de parámetros de URL** para identificación de jugadores
+- **Autenticación anónima** con Firebase para gestión de sesiones
+- **Sistema de login/logout** con interfaz moderna y transiciones suaves
+- **Gestión de estado** de autenticación automática
 
 ## 🔧 Configuración del entorno
 
@@ -258,11 +277,33 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - Combina todas las pistas para identificar al asesino
 - El juego se resuelve mediante la colaboración y deducción
 
+## 🔐 Sistema de Autenticación
+
+### 🚀 Características implementadas
+- **Login anónimo**: Conexión sin información personal
+- **Gestión de sesiones**: Estado persistente durante la navegación
+- **Interfaz moderna**: Diseño limpio con transiciones suaves
+- **Logout funcional**: Cierre de sesión con botón dedicado
+- **Estado automático**: Cambio automático entre login y juego
+
+### 🎯 Cómo funciona
+1. **Al cargar la página**: Se muestra la pantalla de login
+2. **Al hacer clic en "JUGAR ANÓNIMAMENTE"**: Se crea una sesión anónima
+3. **Se genera un ID único**: Identificador único para la sesión
+4. **Se desbloquea el juego**: La interfaz cambia al modo de juego
+5. **Persistencia**: La sesión se mantiene hasta cerrar sesión o cerrar el navegador
+
+### 🔧 Configuración técnica
+- **Firebase SDK**: Integrado con CDN para máxima compatibilidad
+- **Authentication**: Configurado para autenticación anónima
+- **Estado reactivo**: Observer que maneja cambios de autenticación
+- **Manejo de errores**: Alertas informativas para problemas de conexión
+
 ## 🔮 Próximas funcionalidades
 
+- [x] **Autenticación de jugadores** - Sistema de usuarios y sesiones con Firebase
 - [ ] **Sistema de rondas del juego** - Gestión completa de fases del juego
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
-- [ ] **Autenticación de jugadores** - Sistema de usuarios y sesiones
 - [ ] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
 - [ ] **Historial de partidas** - Seguimiento de juegos anteriores
@@ -270,6 +311,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [ ] **Sistema de pistas** - Pistas físicas y digitales integradas
 - [ ] **Integración con BD NoSQL** - Almacenamiento de distribuciones de jugadores
 - [ ] **Sistema de partidas** - Gestión de múltiples sesiones de juego
+- [ ] **Persistencia de datos** - Almacenamiento de progreso y estado del juego
 
 ## 🤝 Contribuir al proyecto
 
@@ -288,6 +330,8 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - Crea una rama para tu feature
 - Mantén el código limpio y documentado
 - Prueba en dispositivos móviles
+- Configura Firebase para funcionalidades de autenticación
+- Sigue las convenciones de commit del proyecto
 
 ## 📚 Recursos adicionales
 
@@ -300,6 +344,8 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Live Server**: Para desarrollo web con hot-reload
 - **CSS Grid**: Para el layout de estancias
 - **Responsive Design**: Para optimización móvil
+- **Firebase**: Para autenticación y base de datos en tiempo real
+- **Firebase Authentication**: Para gestión de sesiones de usuario
 
 ## 📄 Licencia
 
