@@ -261,6 +261,104 @@
     </footer>
 
     <script>
+        // Función para obtener parámetros de la URL
+        function getUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryString = window.location.search;
+            
+            // Buscar en query string como ?1/9
+            const match = queryString.match(/\?(\d+)\/(\d+)/);
+            
+            if (match) {
+                return {
+                    playerNumber: parseInt(match[1]),
+                    totalPlayers: parseInt(match[2])
+                };
+            }
+            return null;
+        }
+
+        // Función para distribuir jugadores aleatoriamente en las estancias
+        function distributePlayers(totalPlayers) {
+            const rooms = [
+                'cocina', 'pasillo_norte', 'habitacion_principal',
+                'comedor', 'centro', 'habitacion_invitados',
+                'torreon_oeste', 'pasillo_sur', 'torreon_este'
+            ];
+            
+            // Inicializar diccionario con arrays vacíos
+            const distribution = {};
+            rooms.forEach(room => {
+                distribution[room] = [];
+            });
+            
+            // Distribuir jugadores aleatoriamente
+            for (let player = 1; player <= totalPlayers; player++) {
+                const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+                distribution[randomRoom].push(player);
+            }
+            
+            // Asegurar que al menos una estancia tenga 2 jugadores
+            let hasTwoPlayers = false;
+            for (let room in distribution) {
+                if (distribution[room].length >= 2) {
+                    hasTwoPlayers = true;
+                    break;
+                }
+            }
+            
+            // Si no hay estancia con 2+ jugadores, mover un jugador a una estancia con 1
+            if (!hasTwoPlayers) {
+                // Encontrar una estancia con 1 jugador
+                let roomWithOne = null;
+                for (let room in distribution) {
+                    if (distribution[room].length === 1) {
+                        roomWithOne = room;
+                        break;
+                    }
+                }
+                
+                // Si no hay estancia con 1 jugador, encontrar una estancia vacía
+                if (!roomWithOne) {
+                    for (let room in distribution) {
+                        if (distribution[room].length === 0) {
+                            roomWithOne = room;
+                            break;
+                        }
+                    }
+                }
+                
+                // Mover un jugador de una estancia con 1 jugador a otra estancia
+                if (roomWithOne) {
+                    for (let room in distribution) {
+                        if (distribution[room].length === 1 && room !== roomWithOne) {
+                            const playerToMove = distribution[room].pop();
+                            distribution[roomWithOne].push(playerToMove);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return distribution;
+        }
+
+        // Función principal que se ejecuta al cargar la página
+        function initializeGame() {
+            const params = getUrlParams();
+            
+            if (params && params.playerNumber === 1) {
+                const playerDistribution = distributePlayers(params.totalPlayers);
+                
+                console.log('Distribución de jugadores:');
+                console.log(playerDistribution);
+            } else if (params) {
+                console.log(`🎮 Jugador ${params.playerNumber} de ${params.totalPlayers}`);
+            } else {
+                console.log('🎮 Juego iniciado sin parámetros de URL');
+            }
+        }
+
         function endRound() {
             // Aquí puedes agregar la lógica para terminar la ronda
             alert('Ronda terminada. Preparando siguiente fase del juego...');
@@ -276,6 +374,9 @@
                 this.style.transform = 'translateY(0) scale(1)';
             });
         });
+
+        // Ejecutar inicialización cuando se carga la página
+        window.addEventListener('load', initializeGame);
     </script>
 </body>
 </html>
