@@ -401,15 +401,28 @@
             const urlParams = new URLSearchParams(window.location.search);
             const queryString = window.location.search;
             
-            // Buscar en query string como ?1/9
-            const match = queryString.match(/\?(\d+)\/(\d+)/);
+            // Buscar en query string como ?/g/CODIGO_JUEGO/p/X/Y
+            const match = queryString.match(/\?\/g\/([^\/]+)\/p\/(\d+)\/(\d+)/);
             
             if (match) {
                 return {
-                    playerNumber: parseInt(match[1]),
-                    totalPlayers: parseInt(match[2])
+                    gameCode: match[1],
+                    playerNumber: parseInt(match[2]),
+                    totalPlayers: parseInt(match[3])
                 };
             }
+            
+            // Fallback: buscar en query string como ?X/Y (formato anterior)
+            const fallbackMatch = queryString.match(/\?(\d+)\/(\d+)/);
+            
+            if (fallbackMatch) {
+                return {
+                    gameCode: 'default',
+                    playerNumber: parseInt(fallbackMatch[1]),
+                    totalPlayers: parseInt(fallbackMatch[2])
+                };
+            }
+            
             return null;
         }
 
@@ -485,9 +498,11 @@
             if (params && params.playerNumber === 1) {
                 const playerDistribution = distributePlayers(params.totalPlayers);
                 
+                console.log(`🎮 Código del juego: ${params.gameCode}`);
                 console.log('Distribución de jugadores:');
                 console.log(playerDistribution);
             } else if (params) {
+                console.log(`🎮 Código del juego: ${params.gameCode}`);
                 console.log(`🎮 Jugador ${params.playerNumber} de ${params.totalPlayers}`);
             } else {
                 console.log('🎮 Juego iniciado sin parámetros de URL');
