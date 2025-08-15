@@ -1,0 +1,6 @@
+---
+description: When using npm
+alwaysApply: false
+---
+
+Execute `nvm use 20` to use Node 20.

@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WHO LIES - Murder Mystery Game</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -186,6 +192,108 @@
             margin-right: 5px;
         }
 
+        /* Login section styles */
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            color: #ff4444;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .login-description {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        .login-btn {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(145deg, #ff6666, #dd2222);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .user-info {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .user-info h3 {
+            color: #ff4444;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .user-id {
+            font-family: monospace;
+            background: rgba(139,0,0,0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+
+
+        .logout-btn {
+            background: linear-gradient(145deg, #666666, #444444);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(145deg, #888888, #666666);
+        }
+
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 2rem;
@@ -208,58 +316,85 @@
     </header>
 
     <main class="main-content">
-        <div class="rooms-grid">
-            <div class="room">
-                <div class="room-text">COCINA</div>
-            </div>
-            <div class="room">
-                <div class="room-text">PASILLO NORTE</div>
-            </div>
-            <div class="room">
-                <div class="room-text">HABITACIÓN PRINCIPAL</div>
-            </div>
-            <div class="room">
-                <div class="room-text">COMEDOR</div>
-            </div>
-            <div class="room">
-                <div class="room-text"></div>
-            </div>
-            <div class="room">
-                <div class="room-text">HABITACIÓN INVITADOS</div>
-            </div>
-            <div class="room">
-                <div class="room-text">TORREÓN OESTE</div>
-            </div>
-            <div class="room">
-                <div class="room-text">PASILLO SUR</div>
-            </div>
-            <div class="room">
-                <div class="room-text">TORREÓN ESTE</div>
-            </div>
+        <!-- Login Section -->
+        <div id="login-section" class="login-section">
+            <p class="login-description">
+                Para comenzar a jugar, conéctate anónimamente. 
+                No se guardará información personal, solo un ID único para tu sesión.
+            </p>
+            
+            <button id="login-btn" class="login-btn" onclick="handleAnonymousLogin()">
+                👤 JUGAR ANÓNIMAMENTE
+            </button>
         </div>
 
-        <div class="game-elements">
-            <div class="element-category">
-                <div class="element-line"><strong>VENENOS:</strong> Arsénico, Cianuro</div>
-                <div class="element-line"><strong>HERRAMIENTAS:</strong> Llave inglesa, Destornillador</div>
-                <div class="element-line"><strong>ARMAS:</strong> Pistola, Escopeta</div>
+        <!-- Game Content (hidden until login) -->
+        <div id="game-content" style="display: none;">
+            <!-- User Info (hidden for production, visible for debugging) -->
+            <div class="user-info" style="display: none;">
+                <h3>Tu Sesión de Juego</h3>
+                <div id="user-details">
+                    <div class="user-id" id="user-id">Conectando...</div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
             </div>
-        </div>
 
-        <div class="game-info">
-            <h2>ANTES DEL CRIMEN</h2>
-            <ul class="info-list">
-                <li>Estás en HABITACIÓN INVITADOS.</li>
-                <li>Contigo ves a JUGADOR 2.</li>
-                <li>Puedes ver en la HABITACIÓN PRINCIPAL a JUGADOR 4.</li>
-            </ul>
+            <div class="rooms-grid">
+                <div class="room">
+                    <div class="room-text">COCINA</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">PASILLO NORTE</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">HABITACIÓN PRINCIPAL</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">COMEDOR</div>
+                </div>
+                <div class="room">
+                    <div class="room-text"></div>
+                </div>
+                <div class="room">
+                    <div class="room-text">HABITACIÓN INVITADOS</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">TORREÓN OESTE</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">PASILLO SUR</div>
+                </div>
+                <div class="room">
+                    <div class="room-text">TORREÓN ESTE</div>
+                </div>
+            </div>
+
+            <div class="game-elements">
+                <div class="element-category">
+                    <div class="element-line"><strong>VENENOS:</strong> Arsénico, Cianuro</div>
+                    <div class="element-line"><strong>HERRAMIENTAS:</strong> Llave inglesa, Destornillador</div>
+                    <div class="element-line"><strong>ARMAS:</strong> Pistola, Escopeta</div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h2>ANTES DEL CRIMEN</h2>
+                <ul class="info-list">
+                    <li>Estás en HABITACIÓN INVITADOS.</li>
+                    <li>Contigo ves a JUGADOR 2.</li>
+                    <li>Puedes ver en la HABITACIÓN PRINCIPAL a JUGADOR 4.</li>
+                </ul>
+            </div>
         </div>
     </main>
 
-    <footer class="footer">
+    <footer id="game-footer" class="footer" style="display: none;">
         <button class="end-round-btn" onclick="endRound()">TERMINAR RONDA</button>
     </footer>
 
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    
     <script>
         // Función para obtener parámetros de la URL
         function getUrlParams() {
@@ -377,6 +512,78 @@
 
         // Ejecutar inicialización cuando se carga la página
         window.addEventListener('load', initializeGame);
+
+        // Firebase Authentication Functions
+        async function handleAnonymousLogin() {
+            const loginBtn = document.getElementById('login-btn');
+            const originalText = loginBtn.textContent;
+            
+            try {
+                loginBtn.textContent = 'Conectando...';
+                loginBtn.classList.add('loading');
+                
+                await signInAnonymously();
+                
+                // Update user ID display
+                const user = getCurrentUser();
+                if (user) {
+                    document.getElementById('user-id').textContent = user.uid;
+                }
+                
+                // Show footer
+                document.getElementById('game-footer').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error en login:', error);
+                alert('Error al conectar. Por favor, intenta de nuevo.');
+                
+                // Reset button
+                loginBtn.textContent = originalText;
+                loginBtn.classList.remove('loading');
+            }
+        }
+
+
+
+        async function handleLogout() {
+            try {
+                await signOut();
+                
+                // Reset user display
+                document.getElementById('user-id').textContent = 'Conectando...';
+                
+                // Hide footer
+                document.getElementById('game-footer').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error en logout:', error);
+                alert('Error al desconectar. Por favor, intenta de nuevo.');
+            }
+        }
+
+        // Update auth state observer to also handle footer visibility
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('Usuario autenticado:', user.uid);
+                // Hide login section and show game content
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('game-content').style.display = 'block';
+                document.getElementById('game-footer').style.display = 'block';
+                
+                // Update user display
+                document.getElementById('user-id').textContent = user.uid;
+                
+            } else {
+                console.log('Usuario no autenticado');
+                // Show login section and hide game content
+                document.getElementById('login-section').style.display = 'block';
+                document.getElementById('game-content').style.display = 'none';
+                document.getElementById('game-footer').style.display = 'none';
+                
+                // Reset user display
+                document.getElementById('user-id').textContent = 'Conectando...';
+            }
+        });
     </script>
 </body>
 </html>
