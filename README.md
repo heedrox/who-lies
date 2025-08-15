@@ -57,6 +57,13 @@ Cada jugador recibe información como:
 - Cada ronda proporciona nueva información
 - Los jugadores pueden "TERMINAR RONDA" para avanzar
 
+### 👥 Distribución de jugadores
+- **Inicialización automática**: Solo el jugador 1 (X=1) ejecuta la distribución
+- **Distribución aleatoria**: Los jugadores se colocan aleatoriamente en las 9 estancias
+- **Regla de validación**: Al menos una estancia debe tener 2 o más jugadores
+- **Formato de datos**: Diccionario JSON listo para integración con base de datos NoSQL
+- **Ejemplo de salida**: `{ 'cocina': [3,2], 'pasillo_norte': [1], ... }`
+
 ## 💻 Contexto de desarrollo
 
 ### 🚀 Origen del proyecto
@@ -73,6 +80,8 @@ Este proyecto nació de una conversación de desarrollo donde se conceptualizó 
 2. **Guía de elementos**: Sistema de categorías (venenos, herramientas, armas)
 3. **Optimización**: Reducción de espaciado y tamaños para mejor ajuste móvil
 4. **Entorno de desarrollo**: Configuración completa con Node.js 20 y npm scripts
+5. **Sistema de jugadores**: Distribución aleatoria en estancias con parámetros de URL
+6. **Preparación para BD**: Estructura de datos lista para integración con NoSQL
 
 ## 🚀 Requisitos del sistema
 
@@ -104,6 +113,7 @@ npm install
 
 ## 🛠️ Desarrollo
 
+### Iniciar servidor
 Para iniciar el servidor de desarrollo:
 
 ```bash
@@ -111,6 +121,22 @@ npm run dev
 ```
 
 Esto abrirá automáticamente tu navegador en `http://localhost:3000`
+
+### Funcionalidad de distribución de jugadores
+La nueva funcionalidad se ejecuta automáticamente cuando:
+1. **URL contiene parámetros**: `?X/Y` (ej: `?1/6`)
+2. **X = 1**: Solo el jugador 1 ejecuta la distribución
+3. **Evento onload**: Se ejecuta al cargar la página
+
+**Funciones implementadas:**
+- `getUrlParams()`: Extrae parámetros X/Y de la URL
+- `distributePlayers(totalPlayers)`: Distribuye jugadores aleatoriamente
+- `initializeGame()`: Función principal que coordina la inicialización
+
+**Validaciones implementadas:**
+- Garantiza que al menos una estancia tenga 2+ jugadores
+- Distribuye el resto de jugadores aleatoriamente (0, 1, 2 o 3 por estancia)
+- Genera diccionario JSON en consola para fácil copia
 
 ### Servidor de desarrollo
 - **Puerto**: 3000
@@ -131,6 +157,7 @@ Esto abrirá automáticamente tu navegador en `http://localhost:3000`
 - **Servidor de desarrollo**: Live Server
 - **Gestión de paquetes**: npm
 - **Entorno**: Node.js 20
+- **Lógica de juego**: Algoritmos de distribución aleatoria y validación de reglas
 
 ## 📁 Estructura del proyecto
 
@@ -153,6 +180,8 @@ who-lies/
 - **Modo vertical** para dispositivos móviles
 - **Guía de elementos** (venenos, herramientas, armas)
 - **Sistema de rondas** con botón "TERMINAR RONDA"
+- **Distribución aleatoria de jugadores** en estancias
+- **Sistema de parámetros de URL** para identificación de jugadores
 
 ## 🔧 Configuración del entorno
 
@@ -189,10 +218,22 @@ npx live-server web --port=3001
 
 ## 📱 Acceso al juego
 
+### URLs de acceso
 Una vez iniciado el servidor:
 - **URL local**: `http://localhost:3000`
 - **URL de red**: `http://127.0.0.1:3000`
 - **Acceso móvil**: Usa la IP de tu máquina en la misma red WiFi
+
+### Sistema de parámetros de jugadores
+El juego utiliza parámetros de URL para identificar jugadores:
+- **Formato**: `http://127.0.0.1:3000/?X/Y`
+- **X**: Número de jugador (1, 2, 3, ...)
+- **Y**: Total de jugadores en la partida
+
+**Ejemplos:**
+- `http://127.0.0.1:3000/?1/6` - Jugador 1 de 6
+- `http://127.0.0.1:3000/?3/8` - Jugador 3 de 8
+- `http://127.0.0.1:3000/?2/4` - Jugador 2 de 4
 
 ## 🎯 Cómo jugar
 
@@ -227,6 +268,8 @@ Una vez iniciado el servidor:
 - [ ] **Historial de partidas** - Seguimiento de juegos anteriores
 - [ ] **Diferentes escenarios** - Múltiples casos de misterio
 - [ ] **Sistema de pistas** - Pistas físicas y digitales integradas
+- [ ] **Integración con BD NoSQL** - Almacenamiento de distribuciones de jugadores
+- [ ] **Sistema de partidas** - Gestión de múltiples sesiones de juego
 
 ## 🤝 Contribuir al proyecto
 
