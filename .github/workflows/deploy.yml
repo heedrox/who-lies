@@ -3,7 +3,8 @@ name: Deploy to Firebase
 on:
   push:
     branches:
-      - main 
+      - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
