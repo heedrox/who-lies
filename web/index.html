@@ -193,6 +193,46 @@
             margin-right: 5px;
         }
 
+        /* Estilos para el perfil del jugador */
+        .player-profile {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .player-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+        }
+
+        .profile-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .role-asesino {
+            color: #ff4444;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .role-complice {
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+
+        .role-invitado {
+            color: #44ff44;
+            text-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
+        }
+
         /* Login section styles */
         .login-section {
             display: flex;
@@ -378,6 +418,12 @@
                 </div>
             </div>
 
+            <!-- Perfil del jugador -->
+            <div id="player-profile" class="player-profile" style="display: none;">
+                <div class="profile-title">TU PERFIL</div>
+                <div id="player-role" class="profile-title">Cargando...</div>
+            </div>
+
             <div class="game-info">
                 <h2>ANTES DEL CRIMEN</h2>
                 <ul class="info-list">
@@ -535,10 +581,59 @@
                 
                 console.log('✅ Distribución y roles guardados exitosamente en Firebase');
                 
+                // Actualizar el perfil del jugador 1
+                updatePlayerProfile(params.playerNumber, playerRoles);
+                
             } catch (error) {
                 console.error('❌ Error al generar/guardar distribución:', error);
                 alert('Error al generar la distribución del juego. Por favor, intenta de nuevo.');
             }
+        }
+
+        // Función para determinar el rol del jugador actual
+        function determinePlayerRole(playerNumber, roles) {
+            if (!roles) return 'INVITADO/A';
+            
+            if (roles.ASESINO === playerNumber) {
+                return 'ASESINO/A';
+            } else if (roles.COMPLICE && roles.COMPLICE.includes(playerNumber)) {
+                return 'COMPLICE';
+            } else {
+                return 'INVITADO/A';
+            }
+        }
+
+        // Función para actualizar el perfil del jugador en la UI
+        function updatePlayerProfile(playerNumber, roles) {
+            const profileElement = document.getElementById('player-profile');
+            const roleElement = document.getElementById('player-role');
+            
+            if (!profileElement || !roleElement) return;
+            
+            const role = determinePlayerRole(playerNumber, roles);
+            let roleClass = '';
+            
+            // Asignar clase CSS según el rol
+            switch (role) {
+                case 'ASESINO/A':
+                    roleClass = 'role-asesino';
+                    break;
+                case 'COMPLICE':
+                    roleClass = 'role-complice';
+                    break;
+                case 'INVITADO/A':
+                    roleClass = 'role-invitado';
+                    break;
+            }
+            
+            // Actualizar el texto y la clase CSS
+            roleElement.textContent = role;
+            roleElement.className = `profile-title ${roleClass}`;
+            
+            // Mostrar el perfil
+            profileElement.style.display = 'block';
+            
+            console.log(`🎭 Jugador ${playerNumber} - Rol: ${role}`);
         }
 
         // Función para recuperar distribución existente
@@ -561,6 +656,9 @@
                     if (gameData.roles) {
                         console.log('🎭 Roles recuperados:');
                         console.log(gameData.roles);
+                        
+                        // Actualizar el perfil del jugador
+                        updatePlayerProfile(params.playerNumber, gameData.roles);
                     }
                     
                     // Aquí podrías actualizar la UI para mostrar la distribución
