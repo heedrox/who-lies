@@ -218,6 +218,8 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin: auto;
+            display: block;
         }
 
         .end-round-btn:hover {
@@ -228,6 +230,133 @@
 
         .end-round-btn:active {
             transform: translateY(0);
+        }
+
+        .end-round-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .end-round-btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(139,0,0,0.3);
+        }
+
+        /* Estilos para el modo de movimiento */
+        .movement-indicator {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 2px solid #4a7c59;
+        }
+
+        .movement-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .movement-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .room.movement-available {
+            background: linear-gradient(145deg, #2d5016, #4a7c59);
+            border-color: #6b8e23;
+            box-shadow: 0 4px 15px rgba(107,142,35,0.4);
+            animation: pulse-movement 2s infinite;
+        }
+
+        .room.movement-available:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(107,142,35,0.6);
+            border-color: #8fbc8f;
+        }
+
+        @keyframes pulse-movement {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(107,142,35,0.4);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(107,142,35,0.8);
+            }
+        }
+
+        /* Estilos para el estado de movimientos */
+        .movement-status {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .movement-status:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+        }
+
+        .movement-status-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ff4444;
+        }
+
+        .movement-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .player-movement-item {
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+            border: 2px solid #666;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .player-movement-item.pending {
+            border-color: #ffaa00;
+            background: linear-gradient(145deg, #4a3a00, #5a4a00);
+            color: #ffaa00;
+        }
+
+        .player-movement-item.moved {
+            border-color: #44ff44;
+            background: linear-gradient(145deg, #004a00, #005a00);
+            color: #44ff44;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .player-movement-item.asesino {
+            border-color: #ff4444;
+            background: linear-gradient(145deg, #4a0000, #5a0000);
+            color: #ff4444;
+        }
+
+        .player-movement-item.complice {
+            border-color: #ffaa00;
+            background: linear-gradient(145deg, #4a3a00, #5a4a00);
+            color: #ffaa00;
         }
 
 
@@ -493,12 +622,20 @@
                 <div id="player-role" class="profile-title">Cargando...</div>
             </div>
 
+            <!-- Lista de movimientos pendientes (solo para jugador 1) -->
+            <div id="movement-status" class="movement-status" style="display: none;">
+                <div class="movement-status-title">📋 ESTADO DE MOVIMIENTOS</div>
+                <div id="movement-list" class="movement-list">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
 
         </div>
     </main>
 
             <footer id="game-footer" class="footer" style="display: none;">
-            <button class="end-round-btn" onclick="endRound()">TERMINAR RONDA</button>
+            <button class="end-round-btn" onclick="endRound()" style="display: none;">TERMINAR RONDA</button>
         </footer>
 
     <!-- Firebase Configuration -->
@@ -851,6 +988,30 @@
             // Actualizar estado de conexión como conectado
             updateConnectionStatus('connected', '🟢 Conectado a Firebase');
             
+            // Verificar si estamos en modo de movimiento
+            if (gameData.endingRound === true) {
+                console.log('🎯 Modo de movimiento activado');
+                enableMovementMode(gameData);
+                
+                // Actualizar lista de movimientos en tiempo real para jugador 1
+                if (window.gameParams && window.gameParams.playerNumber === 1) {
+                    updateMovementList(gameData);
+                }
+            } else {
+                console.log('🎮 Modo normal del juego');
+                disableMovementMode();
+            }
+            
+            // Mostrar botón "TERMINAR RONDA" solo para el jugador 1
+            const endRoundBtn = document.querySelector('.end-round-btn');
+            if (endRoundBtn && window.gameParams) {
+                if (window.gameParams.playerNumber === 1) {
+                    endRoundBtn.style.display = 'block';
+                } else {
+                    endRoundBtn.style.display = 'none';
+                }
+            }
+            
             // Actualizar la UI con los nuevos datos
             updateGameUI(gameData);
             
@@ -880,6 +1041,351 @@
             updateRoomDisplay(gameData.playerDistribution);
             
 
+        }
+
+        // Función para habilitar el modo de movimiento
+        function enableMovementMode(gameData) {
+            console.log('🎯 Habilitando modo de movimiento...');
+            
+            // Cambiar texto del botón a "SIGUIENTE RONDA" y deshabilitarlo
+            const endRoundBtn = document.querySelector('.end-round-btn');
+            if (endRoundBtn) {
+                endRoundBtn.textContent = 'SIGUIENTE RONDA';
+                endRoundBtn.disabled = true;
+                endRoundBtn.style.opacity = '0.5';
+                endRoundBtn.style.cursor = 'not-allowed';
+            }
+            
+            // Mostrar indicador de modo de movimiento
+            showMovementIndicator();
+            
+            // Mostrar lista de movimientos para jugador 1
+            if (window.gameParams && window.gameParams.playerNumber === 1) {
+                showMovementStatus(gameData);
+            }
+            
+            // Habilitar selección de habitaciones para movimiento
+            enableRoomSelection(gameData);
+        }
+        
+        // Función para deshabilitar el modo de movimiento
+        function disableMovementMode() {
+            console.log('🎮 Deshabilitando modo de movimiento...');
+            
+            // Restaurar botón "TERMINAR RONDA" solo para jugador 1
+            const endRoundBtn = document.querySelector('.end-round-btn');
+            if (endRoundBtn && window.gameParams) {
+                if (window.gameParams.playerNumber === 1) {
+                    endRoundBtn.textContent = 'TERMINAR RONDA';
+                    endRoundBtn.disabled = false;
+                    endRoundBtn.style.opacity = '1';
+                    endRoundBtn.style.cursor = 'pointer';
+                    endRoundBtn.style.display = 'block';
+                } else {
+                    endRoundBtn.style.display = 'none';
+                }
+            }
+            
+            // Ocultar indicador de modo de movimiento
+            hideMovementIndicator();
+            
+            // Ocultar lista de movimientos
+            hideMovementStatus();
+            
+            // Deshabilitar selección de habitaciones
+            disableRoomSelection();
+        }
+        
+        // Función para mostrar indicador de modo de movimiento
+        function showMovementIndicator() {
+            // Crear o mostrar indicador
+            let indicator = document.getElementById('movement-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'movement-indicator';
+                indicator.className = 'movement-indicator';
+                indicator.innerHTML = `
+                    <div class="movement-title">🎯 MODO DE MOVIMIENTO</div>
+                    <div class="movement-subtitle">Selecciona una habitación para moverte</div>
+                `;
+                
+                // Insertar después del header
+                const header = document.querySelector('.header');
+                header.parentNode.insertBefore(indicator, header.nextSibling);
+            }
+            indicator.style.display = 'block';
+        }
+        
+        // Función para ocultar indicador de modo de movimiento
+        function hideMovementIndicator() {
+            const indicator = document.getElementById('movement-indicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        // Función para mostrar el estado de movimientos
+        function showMovementStatus(gameData) {
+            const movementStatus = document.getElementById('movement-status');
+            if (!movementStatus) return;
+            
+            movementStatus.style.display = 'block';
+            updateMovementList(gameData);
+        }
+        
+        // Función para ocultar el estado de movimientos
+        function hideMovementStatus() {
+            const movementStatus = document.getElementById('movement-status');
+            if (movementStatus) {
+                movementStatus.style.display = 'none';
+            }
+        }
+        
+        // Función para actualizar la lista de movimientos
+        function updateMovementList(gameData) {
+            const movementList = document.getElementById('movement-list');
+            if (!movementList) return;
+            
+            const totalPlayers = window.gameParams.totalPlayers;
+            const roles = gameData.roles;
+            
+            // Limpiar lista anterior
+            movementList.innerHTML = '';
+            
+            for (let i = 1; i <= totalPlayers; i++) {
+                const playerItem = document.createElement('div');
+                playerItem.className = 'player-movement-item';
+                
+                // Determinar rol del jugador
+                const playerRole = determinePlayerRole(i, roles);
+                let roleClass = '';
+                let roleIcon = '';
+                
+                switch (playerRole) {
+                    case 'ASESINO/A':
+                        roleClass = 'asesino';
+                        roleIcon = '🔪';
+                        break;
+                    case 'COMPLICE':
+                        roleClass = 'complice';
+                        roleIcon = '🕵️';
+                        break;
+                    default:
+                        roleClass = 'pending';
+                        roleIcon = '👤';
+                        break;
+                }
+                
+                // Verificar si el jugador ya se movió
+                const fieldName = `player${i}NextMovement`;
+                const hasMoved = gameData[fieldName];
+                
+                if (hasMoved) {
+                    playerItem.classList.add('moved');
+                    roleClass = 'moved';
+                } else {
+                    playerItem.classList.add(roleClass);
+                }
+                
+                playerItem.innerHTML = `${roleIcon} JUGADOR ${i}`;
+                movementList.appendChild(playerItem);
+            }
+            
+            // Verificar si todos han movido para habilitar el botón
+            checkAllPlayersMovedAndUpdateButton(gameData);
+        }
+        
+        // Función para verificar si todos han movido y actualizar el botón
+        async function checkAllPlayersMovedAndUpdateButton(gameData) {
+            try {
+                const allMoved = await checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
+                const endRoundBtn = document.querySelector('.end-round-btn');
+                
+                if (allMoved && endRoundBtn && window.gameParams.playerNumber === 1) {
+                    // Habilitar botón "SIGUIENTE RONDA"
+                    endRoundBtn.disabled = false;
+                    endRoundBtn.style.opacity = '1';
+                    endRoundBtn.style.cursor = 'pointer';
+                    endRoundBtn.style.background = 'linear-gradient(145deg, #44ff44, #00aa00)';
+                    
+                    console.log('🎯 Todos los jugadores han movido, botón habilitado');
+                }
+            } catch (error) {
+                console.error('❌ Error al verificar movimientos:', error);
+            }
+        }
+        
+        // Función para habilitar selección de habitaciones
+        function enableRoomSelection(gameData) {
+            const rooms = document.querySelectorAll('.room');
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const playerRole = gameData.roles ? determinePlayerRole(currentPlayer, gameData.roles) : 'INVITADO/A';
+            
+            rooms.forEach((room, index) => {
+                const roomNames = [
+                    'cocina', 'pasillo_norte', 'habitacion_principal',
+                    'comedor', 'centro', 'habitacion_invitados',
+                    'torreon_oeste', 'pasillo_sur', 'torreon_este'
+                ];
+                const roomName = roomNames[index];
+                
+                // Saltar habitación del centro
+                if (roomName === 'centro') return;
+                
+                // Verificar si la habitación es accesible para el jugador
+                const isAccessible = isRoomAccessible(roomName, currentPlayer, playerRole, gameData);
+                
+                if (isAccessible) {
+                    room.classList.add('movement-available');
+                    room.style.cursor = 'pointer';
+                    
+                    // Agregar evento de clic para movimiento
+                    room.onclick = () => handleRoomSelection(roomName);
+                } else {
+                    room.classList.remove('movement-available');
+                    room.style.cursor = 'default';
+                    room.onclick = null;
+                }
+            });
+        }
+        
+        // Función para deshabilitar selección de habitaciones
+        function disableRoomSelection() {
+            const rooms = document.querySelectorAll('.room');
+            rooms.forEach(room => {
+                room.classList.remove('movement-available');
+                room.style.cursor = 'default';
+                room.onclick = null;
+            });
+        }
+        
+        // Función para verificar si una habitación es accesible
+        function isRoomAccessible(targetRoom, currentPlayer, playerRole, gameData) {
+            // El ASESINO puede moverse a cualquier habitación
+            if (playerRole === 'ASESINO/A') {
+                return true;
+            }
+            
+            // Para otros jugadores, verificar habitaciones contiguas
+            const currentRoom = getCurrentPlayerRoom(currentPlayer, gameData.playerDistribution);
+            if (!currentRoom) return false;
+            
+            // Obtener habitaciones contiguas desde el diccionario de visibilidad
+            const roomVisibility = {
+                'cocina': ['pasillo_norte', 'comedor'],
+                'pasillo_norte': ['cocina', 'habitacion_principal'],
+                'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
+                'comedor': ['cocina', 'torreon_oeste'],
+                'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+                'torreon_oeste': ['comedor', 'pasillo_sur'],
+                'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+                'torreon_este': ['pasillo_sur', 'habitacion_invitados']
+            };
+            
+            const contiguousRooms = roomVisibility[currentRoom] || [];
+            return contiguousRooms.includes(targetRoom);
+        }
+        
+        // Función para obtener la habitación actual del jugador
+        function getCurrentPlayerRoom(playerNumber, distribution) {
+            for (let room in distribution) {
+                if (distribution[room] && distribution[room].includes(playerNumber)) {
+                    return room;
+                }
+            }
+            return null;
+        }
+        
+        // Función para manejar la selección de habitación
+        async function handleRoomSelection(roomName) {
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const roomDisplayName = getRoomDisplayName(roomName);
+            
+            const confirmMove = confirm(`¿Deseas moverte a ${roomDisplayName}?`);
+            if (!confirmMove) return;
+            
+            try {
+                await updatePlayerMovement(window.gameParams.gameCode, currentPlayer, roomName);
+                console.log(`✅ Movimiento confirmado a ${roomDisplayName}`);
+                
+                // Verificar si todos los jugadores han movido
+                const allMoved = await checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
+                if (allMoved && window.gameParams.playerNumber === 1) {
+                    console.log('🎯 Todos los jugadores han movido, finalizando ronda...');
+                    await finalizeRoundAndRecalculate();
+                }
+            } catch (error) {
+                console.error('❌ Error al confirmar movimiento:', error);
+                alert('Error al confirmar el movimiento. Por favor, intenta de nuevo.');
+            }
+        }
+        
+        // Función para finalizar la ronda y recalcular visibilidad
+        async function finalizeRoundAndRecalculate() {
+            try {
+                console.log('🔄 Recalculando distribución y visibilidad...');
+                
+                // Crear nueva distribución basada en los movimientos
+                const newDistribution = await calculateNewDistribution();
+                
+                // Generar nueva visibilidad
+                const newVisibility = generatePlayerVisibility(newDistribution, window.gameData.roles);
+                
+                // Finalizar la ronda
+                await finalizeRound(window.gameParams.gameCode, newDistribution, newVisibility);
+                
+                console.log('✅ Ronda finalizada exitosamente');
+            } catch (error) {
+                console.error('❌ Error al finalizar la ronda:', error);
+                alert('Error al finalizar la ronda. Por favor, intenta de nuevo.');
+            }
+        }
+        
+        // Función para calcular nueva distribución basada en movimientos
+        async function calculateNewDistribution() {
+            try {
+                const doc = await db.collection('games').doc(window.gameParams.gameCode).get();
+                if (!doc.exists) throw new Error('Juego no encontrado');
+                
+                const gameData = doc.data();
+                const oldDistribution = gameData.playerDistribution;
+                const newDistribution = {};
+                
+                // Inicializar todas las habitaciones como vacías
+                const roomNames = [
+                    'cocina', 'pasillo_norte', 'habitacion_principal',
+                    'comedor', 'centro', 'habitacion_invitados',
+                    'torreon_oeste', 'pasillo_sur', 'torreon_este'
+                ];
+                roomNames.forEach(room => {
+                    newDistribution[room] = [];
+                });
+                
+                // Mover jugadores a sus nuevas ubicaciones
+                for (let i = 1; i <= window.gameParams.totalPlayers; i++) {
+                    const fieldName = `player${i}NextMovement`;
+                    const nextRoom = gameData[fieldName];
+                    
+                    if (nextRoom && nextRoom !== 'centro') {
+                        newDistribution[nextRoom].push(i);
+                    } else {
+                        // Si no hay movimiento o es centro, mantener ubicación actual
+                        for (let room in oldDistribution) {
+                            if (oldDistribution[room] && oldDistribution[room].includes(i)) {
+                                newDistribution[room].push(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                console.log('🔄 Nueva distribución calculada:', newDistribution);
+                return newDistribution;
+                
+            } catch (error) {
+                console.error('❌ Error al calcular nueva distribución:', error);
+                throw error;
+            }
         }
 
         // Función para actualizar la visualización de las habitaciones
@@ -1129,9 +1635,34 @@
             }, 10000); // Verificar cada 10 segundos
         }
 
-        function endRound() {
-            // Aquí puedes agregar la lógica para terminar la ronda
-            alert('Ronda terminada. Preparando siguiente fase del juego...');
+        async function endRound() {
+            // Solo el jugador 1 puede terminar la ronda
+            if (!window.gameParams || window.gameParams.playerNumber !== 1) {
+                alert('Solo el jugador 1 puede terminar la ronda.');
+                return;
+            }
+            
+            const buttonText = document.querySelector('.end-round-btn').textContent;
+            
+            if (buttonText === 'TERMINAR RONDA') {
+                // Activar modo de movimiento
+                try {
+                    await startRoundEnding(window.gameParams.gameCode);
+                    console.log('🎯 Modo de movimiento activado');
+                } catch (error) {
+                    console.error('❌ Error al terminar la ronda:', error);
+                    alert('Error al terminar la ronda. Por favor, intenta de nuevo.');
+                }
+            } else if (buttonText === 'SIGUIENTE RONDA') {
+                // Finalizar la ronda y avanzar
+                try {
+                    console.log('🎯 Avanzando a la siguiente ronda...');
+                    await finalizeRoundAndRecalculate();
+                } catch (error) {
+                    console.error('❌ Error al avanzar ronda:', error);
+                    alert('Error al avanzar a la siguiente ronda. Por favor, intenta de nuevo.');
+                }
+            }
         }
 
 
@@ -1180,6 +1711,14 @@
                 // Show footer
                 document.getElementById('game-footer').style.display = 'block';
                 
+                // Mostrar botón "TERMINAR RONDA" solo para jugador 1
+                const endRoundBtn = document.querySelector('.end-round-btn');
+                if (endRoundBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                    endRoundBtn.style.display = 'block';
+                } else {
+                    endRoundBtn.style.display = 'none';
+                }
+                
             } catch (error) {
                 console.error('Error en login:', error);
                 alert('Error al conectar. Por favor, intenta de nuevo.');
@@ -1219,6 +1758,14 @@
                 
                 // Update user display
                 document.getElementById('user-id').textContent = user.uid;
+                
+                // Mostrar botón "TERMINAR RONDA" solo para jugador 1
+                const endRoundBtn = document.querySelector('.end-round-btn');
+                if (endRoundBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                    endRoundBtn.style.display = 'block';
+                } else {
+                    endRoundBtn.style.display = 'none';
+                }
                 
                 // Configurar listener de conexión de Firestore
                 setupFirestoreConnectionListener();

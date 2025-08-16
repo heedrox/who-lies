@@ -34,7 +34,10 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
       roles: roles,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: auth.currentUser.uid,
-      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+      // Campos para el sistema de rondas
+      endingRound: false,
+      roundNumber: 1
     };
     
     // Agregar visibilidad si se proporciona
@@ -88,6 +91,86 @@ async function getPlayerDistribution(gameCode) {
     }
   } catch (error) {
     console.error('❌ Error al obtener distribución de Firebase:', error);
+    throw error;
+  }
+}
+
+// Function to start round ending (only player 1 can call this)
+async function startRoundEnding(gameCode) {
+  try {
+    await db.collection('games').doc(gameCode).update({
+      endingRound: true,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Ronda terminada, modo de movimiento activado');
+    return true;
+  } catch (error) {
+    console.error('❌ Error al terminar la ronda:', error);
+    throw error;
+  }
+}
+
+// Function to update player movement
+async function updatePlayerMovement(gameCode, playerNumber, nextMovement) {
+  try {
+    const fieldName = `player${playerNumber}NextMovement`;
+    await db.collection('games').doc(gameCode).update({
+      [fieldName]: nextMovement,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log(`✅ Movimiento del jugador ${playerNumber} actualizado: ${nextMovement}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error al actualizar movimiento del jugador ${playerNumber}:`, error);
+    throw error;
+  }
+}
+
+// Function to check if all players have moved
+async function checkAllPlayersMoved(gameCode, totalPlayers) {
+  try {
+    const doc = await db.collection('games').doc(gameCode).get();
+    if (!doc.exists) return false;
+    
+    const gameData = doc.data();
+    let movedPlayers = 0;
+    
+    for (let i = 1; i <= totalPlayers; i++) {
+      const fieldName = `player${i}NextMovement`;
+      if (gameData[fieldName]) {
+        movedPlayers++;
+      }
+    }
+    
+    return movedPlayers === totalPlayers;
+  } catch (error) {
+    console.error('❌ Error al verificar movimientos de jugadores:', error);
+    return false;
+  }
+}
+
+// Function to finalize round and recalculate visibility
+async function finalizeRound(gameCode, newDistribution, newVisibility) {
+  try {
+    // Preparar campos a limpiar
+    const updateData = {
+      playerDistribution: newDistribution,
+      playerVisibility: newVisibility,
+      endingRound: false,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    // Limpiar campos de movimiento de todos los jugadores
+    for (let i = 1; i <= 20; i++) { // Máximo 20 jugadores
+      const fieldName = `player${i}NextMovement`;
+      updateData[fieldName] = firebase.firestore.FieldValue.delete();
+    }
+    
+    await db.collection('games').doc(gameCode).update(updateData);
+    console.log('✅ Ronda finalizada, visibilidad recalculada');
+    return true;
+  } catch (error) {
+    console.error('❌ Error al finalizar la ronda:', error);
     throw error;
   }
 }

@@ -239,6 +239,11 @@ who-lies/
 - **Ventaja táctica para roles especiales** - ASESINO y COMPLICE pueden ver a todos los jugadores en todas las habitaciones
 - **Sistema de visibilidad centralizado** - Diccionario de visibilidad generado una sola vez y almacenado en Firebase
 - **Probabilidad del 50% para INVITADOS** - Se aplica una sola vez al generar la distribución, garantizando consistencia
+- **Sistema de rondas completo** - Control de fases del juego con modo de movimiento
+- **Interfaz de movimiento inteligente** - Selección de habitaciones con restricciones por rol
+- **Seguimiento de movimientos en tiempo real** - Lista visual del estado de cada jugador
+- **Botón de control inteligente** - Cambia automáticamente según el estado de la ronda
+- **Finalización automática de rondas** - Sistema que detecta cuando todos han movido
 
 ## 🔧 Configuración del entorno
 
@@ -373,12 +378,24 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Probabilidad del 50%**: Para INVITADOS, se aplica una sola vez al generar la distribución, no en cada actualización
 - **Consistencia garantizada**: La visibilidad de cada jugador se mantiene constante durante toda la partida
 
+### 🎯 Sistema de Rondas y Movimiento
+- **Control de rondas**: Solo el jugador 1 puede activar el modo de movimiento
+- **Modo de movimiento**: Interfaz especial que permite a los jugadores seleccionar su próxima ubicación
+- **Restricciones de movimiento**: Los jugadores normales solo pueden moverse a habitaciones contiguas
+- **Movimiento libre del ASESINO**: El ASESINO puede moverse a cualquier habitación sin restricciones
+- **Confirmación de movimiento**: Alerta de confirmación antes de procesar cada movimiento
+- **Seguimiento en tiempo real**: El jugador 1 ve el estado de movimientos de todos los jugadores
+- **Lista de movimientos pendientes**: Visualización clara de quién se ha movido y quién está pendiente
+- **Botón inteligente**: Cambia de "TERMINAR RONDA" a "SIGUIENTE RONDA" según el estado
+- **Finalización automática**: La ronda se finaliza automáticamente cuando todos han movido
+- **Recálculo de visibilidad**: Nueva distribución y visibilidad se calculan automáticamente al finalizar
+
 ## 🔮 Próximas funcionalidades
 
 - [x] **Autenticación de jugadores** - Sistema de usuarios y sesiones con Firebase
 - [x] **Sistema de roles automático** - Asignación automática de ASESINO y COMPLICE
 - [x] **Sincronización en tiempo real** - Suscripciones automáticas a Firebase para actualizaciones instantáneas
-- [ ] **Sistema de rondas del juego** - Gestión completa de fases del juego
+- [x] **Sistema de rondas del juego** - Gestión completa de fases del juego con modo de movimiento
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
