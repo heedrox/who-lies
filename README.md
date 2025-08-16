@@ -368,6 +368,13 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Información dinámica**: La UI se actualiza automáticamente mostrando la ubicación actual
 - **Perfil actualizado**: El perfil del jugador muestra su ubicación actual en tiempo real
 
+### 👤 Perfil de Jugador Personalizado
+- **Identificación automática**: El perfil muestra automáticamente "JUG. X" donde X es el número del jugador
+- **Actualización dinámica**: El título del perfil se actualiza automáticamente al cargar el juego
+- **Integración con parámetros URL**: Utiliza los parámetros de la URL (?X/Y) para identificar al jugador
+- **Formato conciso**: Utiliza la abreviatura "JUG." para mantener la interfaz limpia y legible
+- **Persistencia de identidad**: El número de jugador se mantiene visible durante toda la sesión
+
 ### 👁️ Sistema de Visibilidad entre Habitaciones
 - **Visibilidad limitada**: Los jugadores solo pueden ver a otros jugadores en habitaciones contiguas
 - **Reglas de visibilidad**: Cada habitación tiene acceso visual a habitaciones específicas según su ubicación

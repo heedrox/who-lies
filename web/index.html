@@ -642,7 +642,7 @@
         <h1>WHO LIES</h1>
         <div class="subtitle">Murder Mystery Game</div>
         <button id="reload-page-btn" class="reload-page-btn" onclick="window.location.reload()" title="Recargar página">🔄</button>
-        <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR JUEGO</button>
+        <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR</button>
     </header>
 
     <main class="main-content">
@@ -706,7 +706,7 @@
 
             <!-- Perfil del jugador -->
             <div id="player-profile" class="player-profile" style="display: none;">
-                <div class="profile-title">TU PERFIL</div>
+                <div id="profile-title" class="profile-title">TU PERFIL</div>
                 <div id="player-role" class="profile-title">Cargando...</div>
             </div>
 
@@ -1001,8 +1001,9 @@
         function updatePlayerProfile(playerNumber, roles) {
             const profileElement = document.getElementById('player-profile');
             const roleElement = document.getElementById('player-role');
+            const profileTitleElement = document.getElementById('profile-title');
             
-            if (!profileElement || !roleElement) return;
+            if (!profileElement || !roleElement || !profileTitleElement) return;
             
             const role = determinePlayerRole(playerNumber, roles);
             let roleClass = '';
@@ -1019,6 +1020,9 @@
                     roleClass = 'role-invitado';
                     break;
             }
+            
+            // Actualizar el título del perfil con el número de jugador
+            profileTitleElement.textContent = `JUG. ${playerNumber}`;
             
             // Actualizar el texto y la clase CSS
             roleElement.textContent = role;
