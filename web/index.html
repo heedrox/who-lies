@@ -32,6 +32,7 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
         }
 
         .header h1 {
@@ -45,6 +46,36 @@
             margin-top: 10px;
             opacity: 0.9;
             font-style: italic;
+        }
+
+        /* Botón de reiniciar juego */
+        .restart-game-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            font-size: 0.5rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .restart-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(145deg, #ff6666, #dd2222);
+        }
+
+        .restart-game-btn:active {
+            transform: translateY(0);
         }
 
         .main-content {
@@ -359,6 +390,12 @@
             color: #ffaa00;
         }
 
+        .player-movement-item.hidden-role {
+            border-color: #666;
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+            color: #999;
+        }
+
 
 
         /* Estilos para el perfil del jugador */
@@ -555,6 +592,7 @@
     <header class="header">
         <h1>WHO LIES</h1>
         <div class="subtitle">Murder Mystery Game</div>
+        <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR JUEGO</button>
     </header>
 
     <main class="main-content">
@@ -880,6 +918,13 @@
                 // Actualizar el perfil del jugador 1
                 updatePlayerProfile(params.playerNumber, playerRoles);
                 
+                // Actualizar la UI con la nueva distribución
+                updateGameUI({
+                    playerDistribution: playerDistribution,
+                    roles: playerRoles,
+                    playerVisibility: playerVisibility
+                });
+                
                 // Suscribirse a actualizaciones en tiempo real
                 subscribeToGameUpdates(params.gameCode, handleGameUpdate);
                 
@@ -1009,6 +1054,16 @@
                     endRoundBtn.style.display = 'block';
                 } else {
                     endRoundBtn.style.display = 'none';
+                }
+            }
+            
+            // Mostrar botón "REINICIAR JUEGO" solo para el jugador 1
+            const restartBtn = document.getElementById('restart-game-btn');
+            if (restartBtn && window.gameParams) {
+                if (window.gameParams.playerNumber === 1) {
+                    restartBtn.style.display = 'block';
+                } else {
+                    restartBtn.style.display = 'none';
                 }
             }
             
@@ -1148,6 +1203,7 @@
             
             const totalPlayers = window.gameParams.totalPlayers;
             const roles = gameData.roles;
+            const currentPlayer = window.gameParams.playerNumber;
             
             // Limpiar lista anterior
             movementList.innerHTML = '';
@@ -1156,24 +1212,31 @@
                 const playerItem = document.createElement('div');
                 playerItem.className = 'player-movement-item';
                 
-                // Determinar rol del jugador
-                const playerRole = determinePlayerRole(i, roles);
+                // Solo mostrar el rol del jugador actual (jugador 1)
                 let roleClass = '';
                 let roleIcon = '';
                 
-                switch (playerRole) {
-                    case 'ASESINO/A':
-                        roleClass = 'asesino';
-                        roleIcon = '🔪';
-                        break;
-                    case 'COMPLICE':
-                        roleClass = 'complice';
-                        roleIcon = '🕵️';
-                        break;
-                    default:
-                        roleClass = 'pending';
-                        roleIcon = '👤';
-                        break;
+                if (i === currentPlayer) {
+                    // Mostrar rol del jugador actual
+                    const playerRole = determinePlayerRole(i, roles);
+                    switch (playerRole) {
+                        case 'ASESINO/A':
+                            roleClass = 'asesino';
+                            roleIcon = '🔪';
+                            break;
+                        case 'COMPLICE':
+                            roleClass = 'complice';
+                            roleIcon = '🕵️';
+                            break;
+                        default:
+                            roleClass = 'pending';
+                            roleIcon = '👤';
+                            break;
+                    }
+                } else {
+                    // Ocultar rol de otros jugadores
+                    roleClass = 'hidden-role';
+                    roleIcon = '❓';
                 }
                 
                 // Verificar si el jugador ya se movió
@@ -1665,7 +1728,41 @@
             }
         }
 
+        async function restartGame() {
+            const confirmRestart = confirm('¿REALMENTE QUIERES REINICIAR EL JUEGO?');
+            if (!confirmRestart) return;
 
+            const restartBtn = document.getElementById('restart-game-btn');
+            if (!restartBtn) return;
+
+            try {
+                restartBtn.textContent = 'Reiniciando...';
+                restartBtn.disabled = true;
+                restartBtn.style.opacity = '0.5';
+                restartBtn.style.cursor = 'not-allowed';
+
+                // Ejecutar toda la lógica de inicialización del juego
+                await generateAndSaveDistribution();
+                
+                console.log('🔄 Juego reiniciado exitosamente.');
+                
+                // Restaurar el botón
+                restartBtn.textContent = 'REINICIAR JUEGO';
+                restartBtn.disabled = false;
+                restartBtn.style.opacity = '1';
+                restartBtn.style.cursor = 'pointer';
+
+            } catch (error) {
+                console.error('❌ Error al reiniciar el juego:', error);
+                alert('Error al reiniciar el juego. Por favor, intenta de nuevo.');
+                
+                // Restaurar el botón en caso de error
+                restartBtn.textContent = 'REINICIAR JUEGO';
+                restartBtn.disabled = false;
+                restartBtn.style.opacity = '1';
+                restartBtn.style.cursor = 'pointer';
+            }
+        }
 
         // Agregar efectos de hover adicionales
         document.querySelectorAll('.room').forEach(room => {
@@ -1719,6 +1816,14 @@
                     endRoundBtn.style.display = 'none';
                 }
                 
+                // Mostrar botón "REINICIAR JUEGO" solo para jugador 1
+                const restartBtn = document.getElementById('restart-game-btn');
+                if (restartBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                    restartBtn.style.display = 'block';
+                } else {
+                    restartBtn.style.display = 'none';
+                }
+                
             } catch (error) {
                 console.error('Error en login:', error);
                 alert('Error al conectar. Por favor, intenta de nuevo.');
@@ -1767,16 +1872,19 @@
                     endRoundBtn.style.display = 'none';
                 }
                 
+                // Mostrar botón "REINICIAR JUEGO" solo para jugador 1
+                const restartBtn = document.getElementById('restart-game-btn');
+                if (restartBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                    restartBtn.style.display = 'block';
+                } else {
+                    restartBtn.style.display = 'none';
+                }
+                
                 // Configurar listener de conexión de Firestore
                 setupFirestoreConnectionListener();
                 
-                // Si es el jugador 1, generar y guardar distribución
-                // Si no, intentar recuperar distribución existente
-                if (window.gameParams && window.gameParams.playerNumber === 1) {
-                    await generateAndSaveDistribution();
-                } else {
-                    await retrieveExistingDistribution();
-                }
+                // Solo recuperar distribución existente, no generar nueva
+                await retrieveExistingDistribution();
                 
             } else {
                 console.log('Usuario no autenticado');

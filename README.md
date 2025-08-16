@@ -386,6 +386,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Confirmación de movimiento**: Alerta de confirmación antes de procesar cada movimiento
 - **Seguimiento en tiempo real**: El jugador 1 ve el estado de movimientos de todos los jugadores
 - **Lista de movimientos pendientes**: Visualización clara de quién se ha movido y quién está pendiente
+- **Protección de roles**: Solo se muestra el rol del jugador 1, los demás aparecen como "❓" para evitar trampas
 - **Botón inteligente**: Cambia de "TERMINAR RONDA" a "SIGUIENTE RONDA" según el estado
 - **Finalización automática**: La ronda se finaliza automáticamente cuando todos han movido
 - **Recálculo de visibilidad**: Nueva distribución y visibilidad se calculan automáticamente al finalizar
