@@ -391,6 +391,30 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Finalización automática**: La ronda se finaliza automáticamente cuando todos han movido
 - **Recálculo de visibilidad**: Nueva distribución y visibilidad se calculan automáticamente al finalizar
 
+### 🎨 Interfaz de Usuario y Experiencia
+- **Botón centrado**: Botón "TERMINAR RONDA" perfectamente centrado en el footer
+- **Estados visuales del botón**: Cambios automáticos de color y estado según la fase del juego
+- **Sistema de clases CSS**: Gestión de estados del botón sin estilos hardcodeados
+- **Transiciones suaves**: Animaciones fluidas entre diferentes estados del juego
+- **Indicadores visuales**: Colores diferenciados para cada estado del botón
+- **Responsive design**: Interfaz optimizada para dispositivos móviles en modo vertical
+
+### 🔧 Mejoras Técnicas y Arquitectura
+- **Probabilidad de visibilidad ajustada**: Cambio del 50% al 60% para mejor balance del juego
+- **Gestión de estados sin hardcoding**: Sistema de clases CSS para manejo de estados del botón
+- **Limpieza automática de estilos**: Eliminación de estilos inline para mejor mantenibilidad
+- **Sistema de probabilidad centralizado**: Aplicación única durante la generación de distribución
+- **Consistencia de datos**: Visibilidad mantenida constante durante toda la partida
+- **Optimización de rendimiento**: Sin recálculos innecesarios de visibilidad
+
+### 🛡️ Seguridad y Balance del Juego
+- **Protección contra trampas**: Roles de otros jugadores ocultos para el jugador 1
+- **Balance de información**: ASESINO y COMPLICE mantienen ventajas tácticas justificadas
+- **Visibilidad controlada**: Sistema de probabilidad que mantiene el misterio sin ser frustrante
+- **Movimiento equilibrado**: Restricciones apropiadas según el rol del jugador
+- **Consistencia de reglas**: Todas las mecánicas se aplican uniformemente
+- **Prevención de exploits**: Sistema robusto que evita abusos de información
+
 ## 🔮 Próximas funcionalidades
 
 - [x] **Autenticación de jugadores** - Sistema de usuarios y sesiones con Firebase
