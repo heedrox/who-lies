@@ -26,17 +26,24 @@ auth.useDeviceLanguage();
 let activeGameSubscription = null;
 
 // Function to save player distribution to Firestore
-async function savePlayerDistribution(gameCode, totalPlayers, distribution, roles) {
+async function savePlayerDistribution(gameCode, totalPlayers, distribution, roles, playerVisibility = null) {
   try {
-    const docRef = await db.collection('games').doc(gameCode).set({
+    const gameData = {
       totalPlayers: totalPlayers,
       playerDistribution: distribution,
       roles: roles,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: auth.currentUser.uid,
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    console.log('✅ Distribución de jugadores y roles guardados en Firebase con ID:', docRef);
+    };
+    
+    // Agregar visibilidad si se proporciona
+    if (playerVisibility) {
+      gameData.playerVisibility = playerVisibility;
+    }
+    
+    const docRef = await db.collection('games').doc(gameCode).set(gameData);
+    console.log('✅ Distribución de jugadores, roles y visibilidad guardados en Firebase con ID:', docRef);
     return docRef;
   } catch (error) {
     console.error('❌ Error al guardar distribución en Firebase:', error);
