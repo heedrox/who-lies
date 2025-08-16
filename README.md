@@ -393,6 +393,10 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Integración con parámetros URL**: Utiliza los parámetros de la URL (?X/Y) para identificar al jugador
 - **Formato conciso**: Utiliza la abreviatura "JUG." para mantener la interfaz limpia y legible
 - **Persistencia de identidad**: El número de jugador se mantiene visible durante toda la sesión
+- **Información de roles para ASESINO y COMPLICE**: Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
+- **Información del COMPLICE para ASESINO**: Si eres el ASESINO, verás "COMPLICE: JUG. X" en letra pequeña
+- **Información del ASESINO para COMPLICE**: Si eres el COMPLICE, verás "ASESINO/A: JUG. X" en letra pequeña
+- **Seguridad para INVITADOS**: Los jugadores normales no ven información adicional de roles, manteniendo el misterio
 
 ### 👁️ Sistema de Visibilidad entre Habitaciones
 - **Visibilidad limitada**: Los jugadores solo pueden ver a otros jugadores en habitaciones contiguas
@@ -452,6 +456,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Funciones modulares**: Separación clara entre modal completo y simplificado
 - **Logs de depuración**: Sistema de logging para facilitar el desarrollo y debugging
 - **Manejo de casos edge**: Validaciones robustas para situaciones especiales
+- **Información de roles para ASESINO y COMPLICE**: Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
 
 ### 🛡️ Seguridad y Balance del Juego
 - **Protección contra trampas**: Roles de otros jugadores ocultos para el jugador 1
@@ -469,6 +474,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de rondas del juego** - Gestión completa de fases del juego con modo de movimiento
 - [x] **Sistema de asesinatos del ASESINO** - Interfaz de selección de víctima y gestión de muertes (optimizado)
 - [x] **Mecánica de asesinato unificada** - Ejecución automática de kill + movimiento en un paso
+- [x] **Información de roles para ASESINO y COMPLICE** - Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo

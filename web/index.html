@@ -488,6 +488,15 @@
             text-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
         }
 
+        .role-info {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            opacity: 0.8;
+            font-style: italic;
+            color: #cccccc;
+            line-height: 1.3;
+        }
+
 
 
         /* Login section styles */
@@ -881,6 +890,7 @@
             <div id="player-profile" class="player-profile" style="display: none;">
                 <div id="profile-title" class="profile-title">TU PERFIL</div>
                 <div id="player-role" class="profile-title">Cargando...</div>
+                <div id="role-info" class="role-info" style="display: none;"></div>
             </div>
 
             <!-- Lista de movimientos pendientes (solo para jugador 1) -->
@@ -1251,11 +1261,15 @@
             const profileElement = document.getElementById('player-profile');
             const roleElement = document.getElementById('player-role');
             const profileTitleElement = document.getElementById('profile-title');
+            const roleInfoElement = document.getElementById('role-info');
             
-            if (!profileElement || !roleElement || !profileTitleElement) return;
+            if (!profileElement || !roleElement || !profileTitleElement || !roleInfoElement) return;
             
             const role = determinePlayerRole(playerNumber, roles);
             let roleClass = '';
+            
+            // Debug: mostrar estructura de roles
+            console.log(`🎭 Actualizando perfil para JUG. ${playerNumber}:`, { roles, role });
             
             // Asignar clase CSS según el rol
             switch (role) {
@@ -1276,6 +1290,24 @@
             // Actualizar el texto y la clase CSS
             roleElement.textContent = role;
             roleElement.className = `profile-title ${roleClass}`;
+            
+            // Mostrar información adicional solo para ASESINO y COMPLICE
+            if (role === 'ASESINO/A' && roles.COMPLICE && roles.COMPLICE.length > 0) {
+                // Si eres asesino, mostrar quién es el complice
+                const compliceNumber = roles.COMPLICE[0];
+                roleInfoElement.textContent = `COMPLICE: JUG. ${compliceNumber}`;
+                roleInfoElement.style.display = 'block';
+                console.log(`🔍 ASESINO ${playerNumber} puede ver que el COMPLICE es JUG. ${compliceNumber}`);
+            } else if (role === 'COMPLICE' && roles.ASESINO) {
+                // Si eres complice, mostrar quién es el asesino
+                roleInfoElement.textContent = `ASESINO/A: JUG. ${roles.ASESINO}`;
+                roleInfoElement.style.display = 'block';
+                console.log(`🔍 COMPLICE ${playerNumber} puede ver que el ASESINO es JUG. ${roles.ASESINO}`);
+            } else {
+                // Para invitados, no mostrar información adicional
+                roleInfoElement.style.display = 'none';
+                console.log(`👤 INVITADO ${playerNumber} no puede ver información adicional de roles`);
+            }
             
             // Mostrar el perfil
             profileElement.style.display = 'block';
