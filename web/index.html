@@ -8,6 +8,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     
     <style>
@@ -495,17 +496,69 @@
         function initializeGame() {
             const params = getUrlParams();
             
-            if (params && params.playerNumber === 1) {
-                const playerDistribution = distributePlayers(params.totalPlayers);
-                
-                console.log(`🎮 Código del juego: ${params.gameCode}`);
-                console.log('Distribución de jugadores:');
-                console.log(playerDistribution);
-            } else if (params) {
+            if (params) {
                 console.log(`🎮 Código del juego: ${params.gameCode}`);
                 console.log(`🎮 Jugador ${params.playerNumber} de ${params.totalPlayers}`);
+                
+                // Guardar parámetros globalmente para usar después de la autenticación
+                window.gameParams = params;
             } else {
                 console.log('🎮 Juego iniciado sin parámetros de URL');
+            }
+        }
+
+        // Función para generar y guardar distribución después de la autenticación
+        async function generateAndSaveDistribution() {
+            const params = window.gameParams;
+            
+            if (!params || params.playerNumber !== 1) {
+                console.log('🚫 Solo el jugador 1 puede generar la distribución');
+                return;
+            }
+            
+            try {
+                console.log('🎲 Generando distribución de jugadores...');
+                const playerDistribution = distributePlayers(params.totalPlayers);
+                
+                console.log('📊 Distribución generada:');
+                console.log(playerDistribution);
+                
+                // Guardar en Firebase
+                await savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution);
+                
+                console.log('✅ Distribución guardada exitosamente en Firebase');
+                
+            } catch (error) {
+                console.error('❌ Error al generar/guardar distribución:', error);
+                alert('Error al generar la distribución del juego. Por favor, intenta de nuevo.');
+            }
+        }
+
+        // Función para recuperar distribución existente
+        async function retrieveExistingDistribution() {
+            const params = window.gameParams;
+            
+            if (!params) {
+                console.log('❌ No hay parámetros de juego disponibles');
+                return;
+            }
+            
+            try {
+                console.log('🔍 Buscando distribución existente...');
+                const gameData = await getPlayerDistribution(params.gameCode);
+                
+                if (gameData) {
+                    console.log('📋 Distribución recuperada:');
+                    console.log(gameData.playerDistribution);
+                    
+                    // Aquí podrías actualizar la UI para mostrar la distribución
+                    // Por ahora solo la mostramos en consola
+                } else {
+                    console.log('⏳ Esperando a que el jugador 1 genere la distribución...');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error al recuperar distribución:', error);
             }
         }
 
@@ -577,7 +630,7 @@
         }
 
         // Update auth state observer to also handle footer visibility
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 console.log('Usuario autenticado:', user.uid);
                 // Hide login section and show game content
@@ -587,6 +640,14 @@
                 
                 // Update user display
                 document.getElementById('user-id').textContent = user.uid;
+                
+                // Si es el jugador 1, generar y guardar distribución
+                // Si no, intentar recuperar distribución existente
+                if (window.gameParams && window.gameParams.playerNumber === 1) {
+                    await generateAndSaveDistribution();
+                } else {
+                    await retrieveExistingDistribution();
+                }
                 
             } else {
                 console.log('Usuario no autenticado');
