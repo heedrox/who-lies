@@ -381,7 +381,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 ### 🎯 Sistema de Rondas y Movimiento
 - **Control de rondas**: Solo el jugador 1 puede activar el modo de movimiento
 - **Modo de movimiento**: Interfaz especial que permite a los jugadores seleccionar su próxima ubicación
-- **Restricciones de movimiento**: Los jugadores normales solo pueden moverse a habitaciones contiguas
+- **Restricciones de movimiento**: Los jugadores normales pueden moverse a habitaciones contiguas o quedarse en la misma ubicación
 - **Movimiento libre del ASESINO**: El ASESINO puede moverse a cualquier habitación sin restricciones
 - **Confirmación de movimiento**: Alerta de confirmación antes de procesar cada movimiento
 - **Seguimiento en tiempo real**: El jugador 1 ve el estado de movimientos de todos los jugadores

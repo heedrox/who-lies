@@ -1333,6 +1333,11 @@
             const currentRoom = getCurrentPlayerRoom(currentPlayer, gameData.playerDistribution);
             if (!currentRoom) return false;
             
+            // Permitir quedarse en la misma habitación
+            if (targetRoom === currentRoom) {
+                return true;
+            }
+            
             // Obtener habitaciones contiguas desde el diccionario de visibilidad
             const roomVisibility = {
                 'cocina': ['pasillo_norte', 'comedor'],
