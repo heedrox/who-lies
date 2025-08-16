@@ -274,6 +274,24 @@
             box-shadow: 0 4px 15px rgba(139,0,0,0.3);
         }
 
+        /* Estados especiales del botón */
+        .end-round-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .end-round-btn.ready-to-advance {
+            background: linear-gradient(145deg, #44ff44, #00aa00) !important;
+            border-color: #00aa00;
+            box-shadow: 0 4px 15px rgba(0,170,0,0.4);
+        }
+
+        .end-round-btn.ready-to-advance:hover {
+            background: linear-gradient(145deg, #66ff66, #00cc00) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,170,0,0.6);
+        }
+
         /* Estilos para el modo de movimiento */
         .movement-indicator {
             background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
@@ -1107,8 +1125,7 @@
             if (endRoundBtn) {
                 endRoundBtn.textContent = 'SIGUIENTE RONDA';
                 endRoundBtn.disabled = true;
-                endRoundBtn.style.opacity = '0.5';
-                endRoundBtn.style.cursor = 'not-allowed';
+                endRoundBtn.classList.add('disabled');
             }
             
             // Mostrar indicador de modo de movimiento
@@ -1133,8 +1150,7 @@
                 if (window.gameParams.playerNumber === 1) {
                     endRoundBtn.textContent = 'TERMINAR RONDA';
                     endRoundBtn.disabled = false;
-                    endRoundBtn.style.opacity = '1';
-                    endRoundBtn.style.cursor = 'pointer';
+                    endRoundBtn.classList.remove('ready-to-advance');
                     endRoundBtn.style.display = 'block';
                 } else {
                     endRoundBtn.style.display = 'none';
@@ -1267,9 +1283,7 @@
                 if (allMoved && endRoundBtn && window.gameParams.playerNumber === 1) {
                     // Habilitar botón "SIGUIENTE RONDA"
                     endRoundBtn.disabled = false;
-                    endRoundBtn.style.opacity = '1';
-                    endRoundBtn.style.cursor = 'pointer';
-                    endRoundBtn.style.background = 'linear-gradient(145deg, #44ff44, #00aa00)';
+                    endRoundBtn.classList.add('ready-to-advance');
                     
                     console.log('🎯 Todos los jugadores han movido, botón habilitado');
                 }
