@@ -238,14 +238,14 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
       // Actualizar array de muertos
       updateData.deads = currentDeads;
       
-      // Limpiar campo nextDeath
-      updateData.nextDeath = firebase.firestore.FieldValue.delete();
       
       console.log(`✅ Muerte procesada. Array de muertos actualizado: [${currentDeads.join(', ')}]`);
     } else {
       console.log('ℹ️ No hay muerte pendiente en esta ronda');
     }
     
+    // Limpiar campo nextDeath
+    updateData.nextDeath = firebase.firestore.FieldValue.delete();
     await db.collection('games').doc(gameCode).update(updateData);
     console.log('✅ Ronda finalizada, visibilidad recalculada');
     return true;

@@ -446,6 +446,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Modal adaptativo**: Interfaz simplificada cuando no hay víctimas disponibles
 - **Actualización garantizada de BD**: Siempre se registra la decisión del ASESINO en Firebase
 - **Sistema robusto**: Maneja casos edge como habitaciones sin víctimas vivas
+- **Prevención de movimiento de víctimas**: Los jugadores marcados en `nextDeath` no se mueven antes de ser procesados como muertos
 
 ### 🎨 Interfaz de Usuario y Experiencia
 - **Botón centrado**: Botón "TERMINAR RONDA" perfectamente centrado en el footer
@@ -469,6 +470,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Logs de depuración**: Sistema de logging para facilitar el desarrollo y debugging
 - **Manejo de casos edge**: Validaciones robustas para situaciones especiales
 - **Información de roles para ASESINO y COMPLICE**: Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
+- **Fix de distribución de víctimas**: La función `calculateNewDistribution` ahora ignora los movimientos de jugadores marcados en `nextDeath` para evitar inconsistencias en la ubicación antes de procesar la muerte
 
 ### 🛡️ Seguridad y Balance del Juego
 - **Protección contra trampas**: Roles de otros jugadores ocultos para el jugador 1
@@ -488,6 +490,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Mecánica de asesinato unificada** - Ejecución automática de kill + movimiento en un paso
 - [x] **Información de roles para ASESINO y COMPLICE** - Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
 - [x] **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
+- [x] **Fix de distribución de víctimas** - Los jugadores marcados para morir no se mueven antes de ser procesados como muertos
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo

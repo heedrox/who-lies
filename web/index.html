@@ -2310,6 +2310,19 @@
                 
                 // Mover jugadores a sus nuevas ubicaciones
                 for (let i = 1; i <= window.gameParams.totalPlayers; i++) {
+                    // Verificar si este jugador está marcado para morir en nextDeath
+                    if (gameData.nextDeath === i) {
+                        console.log(`💀 Ignorando movimiento del jugador ${i} (marcado para morir)`);
+                        // Mantener al jugador en su ubicación actual (no moverlo)
+                        for (let room in oldDistribution) {
+                            if (oldDistribution[room] && oldDistribution[room].includes(i)) {
+                                newDistribution[room].push(i);
+                                break;
+                            }
+                        }
+                        continue; // Saltar al siguiente jugador
+                    }
+                    
                     const fieldName = `player${i}NextMovement`;
                     const nextRoom = gameData[fieldName];
                     
