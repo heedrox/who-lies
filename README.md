@@ -244,6 +244,7 @@ who-lies/
 - **Seguimiento de movimientos en tiempo real** - Lista visual del estado de cada jugador
 - **Botón de control inteligente** - Cambia automáticamente según el estado de la ronda
 - **Finalización automática de rondas** - Sistema que detecta cuando todos han movido
+- **Botón de recarga rápida** - Botón circular con emoji 🔄 para recargar la página desde la esquina superior izquierda
 
 ## 🔧 Configuración del entorno
 
@@ -398,6 +399,8 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Transiciones suaves**: Animaciones fluidas entre diferentes estados del juego
 - **Indicadores visuales**: Colores diferenciados para cada estado del botón
 - **Responsive design**: Interfaz optimizada para dispositivos móviles en modo vertical
+- **Botón de recarga**: Botón circular con emoji 🔄 en la esquina superior izquierda para recargar la página
+- **Navegación intuitiva**: Acceso rápido a funcionalidad de recarga sin interferir con el diseño principal
 
 ### 🔧 Mejoras Técnicas y Arquitectura
 - **Probabilidad de visibilidad ajustada**: Cambio del 50% al 60% para mejor balance del juego
