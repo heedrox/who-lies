@@ -90,6 +90,17 @@ Cada jugador recibe información como:
 - **Validación**: El COMPLICE siempre es diferente al ASESINO
 - **Formato de roles**: `{ "ASESINO": 3, "COMPLICE": [1] }`
 
+### 🎯 Sistema de acusaciones colectivas
+- **Director de juego**: Solo el jugador 1 puede ejecutar acusaciones
+- **Acusaciones grupales**: El jugador 1 representa la decisión colectiva del grupo
+- **Interfaz visual**: Celdas de estado de jugadores clickeables en la parte superior
+- **Modal de confirmación**: "¿ACUSAR AL JUG. X?" con botones SÍ/NO
+- **Resultados de acusación**:
+  - **Éxito**: "¡FELICIDADES! ¡HABÉIS MATADO AL ASESINO!" si el acusado es el ASESINO
+  - **Fracaso**: El jugador acusado se marca como muerto y la partida continúa
+- **Integración con Firebase**: Los jugadores muertos se sincronizan en tiempo real
+- **Prevención de auto-acusación**: El jugador 1 puede acusar a cualquier jugador, incluyendo J1
+
 ## 💻 Contexto de desarrollo
 
 ### 🚀 Origen del proyecto
@@ -249,6 +260,7 @@ who-lies/
 - **Botón de control inteligente** - Cambia automáticamente según el estado de la ronda
 - **Finalización automática de rondas** - Sistema que detecta cuando todos han movido
 - **Botón de recarga rápida** - Botón circular con emoji 🔄 para recargar la página desde la esquina superior izquierda
+- **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
 
 ## 🔧 Configuración del entorno
 
@@ -475,6 +487,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de asesinatos del ASESINO** - Interfaz de selección de víctima y gestión de muertes (optimizado)
 - [x] **Mecánica de asesinato unificada** - Ejecución automática de kill + movimiento en un paso
 - [x] **Información de roles para ASESINO y COMPLICE** - Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
+- [x] **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo

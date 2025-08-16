@@ -298,7 +298,175 @@
         .end-round-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+        }
+
+        /* Modal de acusación */
+        .accusation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .accusation-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .accusation-content {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 3px solid #8b0000;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .accusation-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff4444;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .accusation-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .accusation-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .accusation-btn.yes {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .accusation-btn.yes:hover {
+            background: linear-gradient(145deg, #ff6666, #dd2222);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        .accusation-btn.no {
+            background: linear-gradient(145deg, #666666, #444444);
+            color: white;
+        }
+
+        .accusation-btn.no:hover {
+            background: linear-gradient(145deg, #888888, #666666);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
+        }
+
+        /* Modal de resultado de acusación */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .result-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-content {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 3px solid #8b0000;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .result-title.success {
+            color: #00ff00;
+        }
+
+        .result-title.failure {
+            color: #ff4444;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .result-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .result-btn:hover {
+            background: linear-gradient(145deg, #ff6666, #dd2222);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .end-round-btn:disabled:hover {
@@ -771,6 +939,18 @@
         .player-status-cell:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        /* Estilos para celdas clickeables (solo para jugador 1) */
+        .player-status-cell[data-clickable="true"] {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .player-status-cell[data-clickable="true"]:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+            border-color: #ff4444;
         }
 
         .player-status-emoji {
@@ -2303,6 +2483,11 @@
             playersStatusHTML += '</div>';
             playersStatusContainer.innerHTML = playersStatusHTML;
             playersStatusContainer.style.display = 'block';
+            
+            // Hacer clickeables las celdas de estado de jugadores para acusaciones (solo para jugador 1)
+            if (window.gameParams && window.gameParams.playerNumber === 1) {
+                makePlayerStatusCellsClickable();
+            }
         }
 
         // Función para obtener el nombre de visualización de una habitación
@@ -2690,6 +2875,181 @@
                 updateConnectionStatus('disconnected', '🔴 No autenticado');
             }
         });
+
+        // Sistema de acusaciones
+        let currentAccusationTarget = null;
+
+        // Función para mostrar modal de acusación
+        function showAccusationModal(targetPlayer) {
+            currentAccusationTarget = targetPlayer;
+            
+            // Crear modal si no existe
+            let modal = document.getElementById('accusation-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'accusation-modal';
+                modal.className = 'accusation-modal';
+                modal.innerHTML = `
+                    <div class="accusation-content">
+                        <div class="accusation-title">¿ACUSAR AL JUG. ${targetPlayer}?</div>
+                        <div class="accusation-buttons">
+                            <button class="accusation-btn yes" onclick="confirmAccusation()">SÍ</button>
+                            <button class="accusation-btn no" onclick="cancelAccusation()">NO</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                // Actualizar el contenido del modal existente
+                modal.querySelector('.accusation-title').textContent = `¿ACUSAR AL JUG. ${targetPlayer}?`;
+            }
+            
+            // Mostrar modal
+            modal.classList.add('show');
+        }
+
+        // Función para confirmar acusación
+        async function confirmAccusation() {
+            if (!currentAccusationTarget) return;
+            
+            const targetPlayer = currentAccusationTarget;
+            currentAccusationTarget = null;
+            
+            // Ocultar modal de acusación
+            document.getElementById('accusation-modal').classList.remove('show');
+            
+            // Verificar si el jugador acusado es el asesino
+            if (window.gameData && window.gameData.roles && window.gameData.roles.ASESINO === targetPlayer) {
+                // ¡ÉXITO! El jugador acusado es el asesino
+                showResultModal(true, targetPlayer);
+            } else {
+                // El jugador acusado NO es el asesino
+                showResultModal(false, targetPlayer);
+                
+                // Marcar al jugador como muerto en Firebase
+                await markPlayerAsDead(targetPlayer);
+            }
+        }
+
+        // Función para cancelar acusación
+        function cancelAccusation() {
+            currentAccusationTarget = null;
+            document.getElementById('accusation-modal').classList.remove('show');
+        }
+
+        // Función para mostrar modal de resultado
+        function showResultModal(isSuccess, targetPlayer) {
+            let modal = document.getElementById('result-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'result-modal';
+                modal.className = 'result-modal';
+                document.body.appendChild(modal);
+            }
+            
+            if (isSuccess) {
+                // Éxito: el jugador acusado era el asesino
+                modal.innerHTML = `
+                    <div class="result-content">
+                        <div class="result-title success">¡FELICIDADES!</div>
+                        <div class="result-message">¡HABÉIS MATADO AL ASESINO!<br><br>El JUG. ${targetPlayer} era el ASESINO.</div>
+                        <button class="result-btn" onclick="closeResultModal()">CONTINUAR</button>
+                    </div>
+                `;
+            } else {
+                // Fracaso: el jugador acusado NO era el asesino
+                modal.innerHTML = `
+                    <div class="result-content">
+                        <div class="result-title failure">ACUSACIÓN INCORRECTA</div>
+                        <div class="result-message">El JUG. ${targetPlayer} NO era el asesino.<br><br>Ha sido marcado como muerto. La partida continúa.</div>
+                        <button class="result-btn" onclick="closeResultModal()">CONTINUAR</button>
+                    </div>
+                `;
+            }
+            
+            modal.classList.add('show');
+        }
+
+        // Función para cerrar modal de resultado
+        function closeResultModal() {
+            document.getElementById('result-modal').classList.remove('show');
+        }
+
+        // Función para marcar jugador como muerto en Firebase
+        async function markPlayerAsDead(playerNumber) {
+            try {
+                if (!window.gameParams || !window.gameParams.gameCode) {
+                    console.error('❌ No hay código de juego disponible para marcar jugador como muerto');
+                    return;
+                }
+
+                // Obtener el array actual de muertos
+                const gameDoc = await db.collection('games').doc(window.gameParams.gameCode).get();
+                if (!gameDoc.exists) {
+                    console.error('❌ No se encontró el documento del juego');
+                    return;
+                }
+
+                const currentDeads = gameDoc.data().deads || [];
+                
+                // Agregar el jugador al array de muertos si no está ya
+                if (!currentDeads.includes(playerNumber)) {
+                    const updatedDeads = [...currentDeads, playerNumber];
+                    
+                    await db.collection('games').doc(window.gameParams.gameCode).update({
+                        deads: updatedDeads
+                    });
+                    
+                    console.log(`✅ Jugador ${playerNumber} marcado como muerto en Firebase`);
+                } else {
+                    console.log(`ℹ️ El jugador ${playerNumber} ya estaba marcado como muerto`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error al marcar jugador como muerto:', error);
+                alert('Error al marcar jugador como muerto. Por favor, intenta de nuevo.');
+            }
+        }
+
+        // Función para hacer clickeables las celdas de estado de jugadores
+        function makePlayerStatusCellsClickable() {
+            // Solo hacer clickeables las celdas si el jugador actual es el jugador 1 (director de juego)
+            if (!window.gameParams || window.gameParams.playerNumber !== 1) {
+                return;
+            }
+
+            // Agregar event listeners a todas las celdas de estado de jugadores
+            const playerStatusCells = document.querySelectorAll('.player-status-cell');
+            playerStatusCells.forEach(cell => {
+                // Solo agregar listener si no lo tiene ya
+                if (!cell.hasAttribute('data-clickable')) {
+                    cell.setAttribute('data-clickable', 'true');
+                    cell.style.cursor = 'pointer';
+                    cell.style.transition = 'all 0.2s ease';
+                    
+                    // Agregar hover effect
+                    cell.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.1)';
+                        this.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.6)';
+                    });
+                    
+                    cell.addEventListener('mouseleave', function() {
+                        this.style.transform = 'scale(1)';
+                        this.style.boxShadow = 'none';
+                    });
+                    
+                    // Agregar click event
+                    cell.addEventListener('click', function() {
+                        const playerNumber = parseInt(this.querySelector('.player-status-number').textContent);
+                        if (playerNumber) { // Director de juego puede acusar a cualquier jugador
+                            showAccusationModal(playerNumber);
+                        }
+                    });
+                }
+            });
+        }
+
+
     </script>
 </body>
 </html>
