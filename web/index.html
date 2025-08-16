@@ -418,6 +418,8 @@
                 padding: 15px;
             }
         }
+
+
     </style>
 </head>
 <body>
@@ -696,6 +698,8 @@
             // Mostrar el perfil
             profileElement.style.display = 'block';
             
+
+            
             console.log(`🎭 Jugador ${playerNumber} - Rol: ${role}`);
         }
 
@@ -765,9 +769,14 @@
             
             console.log('🎨 Actualizando UI del juego...');
             
+            // Guardar datos del juego globalmente para acceso desde otras funciones
+            window.gameData = gameData;
+            
             // Aquí puedes agregar lógica para actualizar la visualización de las habitaciones
             // Por ejemplo, mostrar qué jugadores están en cada habitación
             updateRoomDisplay(gameData.playerDistribution);
+            
+
         }
 
         // Función para actualizar la visualización de las habitaciones
@@ -819,24 +828,56 @@
                 roomTitle.textContent = roomDisplayName;
                 room.appendChild(roomTitle);
                 
-                // Mostrar jugadores en la habitación
+                // Mostrar jugadores en la habitación (solo los visibles para el jugador actual)
                 if (players.length > 0) {
                     const playersList = document.createElement('div');
                     playersList.className = 'players-in-room';
                     
-                    players.forEach(playerNum => {
-                        const playerSpan = document.createElement('span');
-                        playerSpan.className = 'player-tag';
-                        // Resaltar el jugador actual con un estilo especial
-                        if (playerNum === currentPlayer) {
-                            playerSpan.classList.add('current-player');
+                    // Obtener información de visibilidad del jugador actual
+                    let visiblePlayers = players;
+                    if (currentPlayer && window.gameData && window.gameData.playerDistribution) {
+                        const visibilityInfo = getPlayerVisibilityInfo(currentPlayer, window.gameData.playerDistribution, window.gameData.roles);
+                        
+                        // Si el jugador es ASESINO o COMPLICE, puede ver TODOS los jugadores en TODAS las habitaciones
+                        if (window.gameData.roles) {
+                            const playerRole = determinePlayerRole(currentPlayer, window.gameData.roles);
+                            if (playerRole === 'ASESINO/A' || playerRole === 'COMPLICE') {
+                                visiblePlayers = players; // Mostrar todos los jugadores en esta habitación
+                                console.log(`👑 ${playerRole} ${currentPlayer} puede ver TODOS los jugadores en ${roomName}: [${players.map(p => `J${p}`).join(', ')}]`);
+                            } else {
+                                // Para jugadores normales, aplicar las reglas de visibilidad normales
+                                if (visibilityInfo.currentRoom === roomName || visibilityInfo.visibleRooms.includes(roomName)) {
+                                    visiblePlayers = players;
+                                } else {
+                                    visiblePlayers = [];
+                                }
+                            }
+                        } else {
+                            // Si no hay roles, aplicar las reglas normales
+                            if (visibilityInfo.currentRoom === roomName || visibilityInfo.visibleRooms.includes(roomName)) {
+                                visiblePlayers = players;
+                            } else {
+                                visiblePlayers = [];
+                            }
                         }
-                        playerSpan.textContent = `J${playerNum}`;
-                        playersList.appendChild(playerSpan);
-                    });
+                    }
                     
-                    room.appendChild(playersList);
-                    console.log(`✅ Habitación ${roomDisplayName} actualizada con ${players.length} jugadores`);
+                    // Mostrar jugadores visibles
+                    if (visiblePlayers.length > 0) {
+                        visiblePlayers.forEach(playerNum => {
+                            const playerSpan = document.createElement('span');
+                            playerSpan.className = 'player-tag';
+                            // Resaltar el jugador actual con un estilo especial
+                            if (playerNum === currentPlayer) {
+                                playerSpan.classList.add('current-player');
+                            }
+                            playerSpan.textContent = `J${playerNum}`;
+                            playersList.appendChild(playerSpan);
+                        });
+                        
+                        room.appendChild(playersList);
+                        console.log(`✅ Habitación ${roomDisplayName} actualizada con ${visiblePlayers.length} jugadores visibles`);
+                    }
                 } else {
                     console.log(`✅ Habitación ${roomDisplayName} actualizada (sin jugadores)`);
                 }
@@ -868,7 +909,102 @@
             return displayName;
         }
 
+        // Diccionario de visibilidad entre habitaciones
+        const roomVisibility = {
+            'cocina': ['pasillo_norte', 'comedor'],
+            'pasillo_norte': ['cocina', 'habitacion_principal'],
+            'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
+            'comedor': ['cocina', 'torreon_oeste'],
+            'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+            'torreon_oeste': ['comedor', 'pasillo_sur'],
+            'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+            'torreon_este': ['pasillo_sur', 'habitacion_invitados']
+        };
 
+        // Mostrar el diccionario de visibilidad en consola para referencia
+        console.log('🗺️ Diccionario de visibilidad entre habitaciones:');
+        console.log(roomVisibility);
+
+        // Función para determinar qué jugadores puede ver un jugador desde su habitación
+        function getVisiblePlayers(playerNumber, playerDistribution, roles = null) {
+            if (!playerDistribution) return [];
+            
+            // Si hay roles, verificar si el jugador es ASESINO o COMPLICE
+            if (roles) {
+                const playerRole = determinePlayerRole(playerNumber, roles);
+                if (playerRole === 'ASESINO/A' || playerRole === 'COMPLICE') {
+                    // ASESINO y COMPLICE pueden ver a todos los jugadores
+                    const allPlayers = [];
+                    for (let room in playerDistribution) {
+                        if (playerDistribution[room]) {
+                            allPlayers.push(...playerDistribution[room]);
+                        }
+                    }
+                    const sortedPlayers = [...new Set(allPlayers)].sort((a, b) => a - b);
+                    console.log(`👑 ${playerRole} ${playerNumber} puede ver a TODOS los jugadores: [${sortedPlayers.map(p => `J${p}`).join(', ')}]`);
+                    return sortedPlayers;
+                }
+            }
+            
+            // Para jugadores normales, aplicar las reglas de visibilidad normales
+            // Encontrar en qué habitación está el jugador
+            let playerRoom = null;
+            for (let room in playerDistribution) {
+                if (playerDistribution[room].includes(playerNumber)) {
+                    playerRoom = room;
+                    break;
+                }
+            }
+            
+            if (!playerRoom) return [];
+            
+            // Obtener las habitaciones que puede ver desde su ubicación
+            const visibleRooms = roomVisibility[playerRoom] || [];
+            
+            // Obtener todos los jugadores en las habitaciones visibles
+            const visiblePlayers = [];
+            visibleRooms.forEach(room => {
+                if (playerDistribution[room]) {
+                    visiblePlayers.push(...playerDistribution[room]);
+                }
+            });
+            
+            // También incluir a los jugadores que están en la misma habitación
+            if (playerDistribution[playerRoom]) {
+                visiblePlayers.push(...playerDistribution[playerRoom]);
+            }
+            
+            // Eliminar duplicados y ordenar
+            return [...new Set(visiblePlayers)].sort((a, b) => a - b);
+        }
+
+        // Función para obtener información de visibilidad del jugador
+        function getPlayerVisibilityInfo(playerNumber, playerDistribution, roles = null) {
+            if (!playerDistribution) return { currentRoom: null, visiblePlayers: [], visibleRooms: [] };
+            
+            // Encontrar en qué habitación está el jugador
+            let playerRoom = null;
+            for (let room in playerDistribution) {
+                if (playerDistribution[room].includes(playerNumber)) {
+                    playerRoom = room;
+                    break;
+                }
+            }
+            
+            if (!playerRoom) return { currentRoom: null, visiblePlayers: [], visibleRooms: [] };
+            
+            // Obtener las habitaciones que puede ver
+            const visibleRooms = roomVisibility[playerRoom] || [];
+            
+            // Obtener jugadores visibles (pasando los roles para verificar si es ASESINO/COMPLICE)
+            const visiblePlayers = getVisiblePlayers(playerNumber, playerDistribution, roles);
+            
+            return {
+                currentRoom: playerRoom,
+                visiblePlayers: visiblePlayers,
+                visibleRooms: visibleRooms
+            };
+        }
 
 
 

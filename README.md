@@ -49,6 +49,19 @@ Cada jugador recibe información como:
 - Cada pieza de información es una pista que debe ser conectada
 - La resolución del misterio requiere colaboración y deducción lógica
 
+### 👁️ Sistema de visibilidad por habitación
+- **Reglas de visibilidad**: Cada habitación solo puede ver a habitaciones contiguas específicas
+- **Distribución de visibilidad**:
+  - **Cocina**: Ve a Pasillo Norte y Comedor
+  - **Pasillo Norte**: Ve a Cocina y Habitación Principal
+  - **Habitación Principal**: Ve a Pasillo Norte y Habitación Invitados
+  - **Comedor**: Ve a Cocina y Torreón Oeste
+  - **Habitación Invitados**: Ve a Habitación Principal y Torreón Este
+  - **Torreón Oeste**: Ve a Comedor y Pasillo Sur
+  - **Pasillo Sur**: Ve a Torreón Oeste y Torreón Este
+  - **Torreón Este**: Ve a Pasillo Sur y Habitación Invitados
+- **Ventaja para roles especiales**: ASESINO y COMPLICE pueden ver a todos los jugadores en todas las habitaciones
+
 ### 🎲 Estructura de rondas
 - El juego se divide en rondas
 - Cada ronda proporciona nueva información
@@ -218,6 +231,8 @@ who-lies/
 - **Actualización automática de la UI** sin necesidad de recargar la página
 - **Gestión inteligente de recursos** con limpieza automática de suscripciones
 - **Resaltado visual de ubicación** - La habitación del jugador actual se resalta en rojo con animaciones
+- **Sistema de visibilidad entre habitaciones** - Los jugadores solo ven a otros jugadores en habitaciones contiguas
+- **Ventaja táctica para roles especiales** - ASESINO y COMPLICE pueden ver a todos los jugadores en todas las habitaciones
 
 ## 🔧 Configuración del entorno
 
@@ -340,6 +355,14 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Tag del jugador**: El número del jugador actual se resalta con animaciones especiales
 - **Información dinámica**: La UI se actualiza automáticamente mostrando la ubicación actual
 - **Perfil actualizado**: El perfil del jugador muestra su ubicación actual en tiempo real
+
+### 👁️ Sistema de Visibilidad entre Habitaciones
+- **Visibilidad limitada**: Los jugadores solo pueden ver a otros jugadores en habitaciones contiguas
+- **Reglas de visibilidad**: Cada habitación tiene acceso visual a habitaciones específicas según su ubicación
+- **Ventaja táctica para roles especiales**: ASESINO y COMPLICE pueden ver a TODOS los jugadores en TODAS las habitaciones
+- **Información parcial**: Los INVITADOS solo ven jugadores en habitaciones visibles, fomentando la deducción
+- **Habitaciones ocultas**: Las habitaciones no visibles se muestran como vacías (sin spoilers)
+- **Diccionario de visibilidad**: Sistema configurable que define qué habitaciones puede ver cada estancia
 
 ## 🔮 Próximas funcionalidades
 
