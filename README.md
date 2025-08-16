@@ -64,6 +64,15 @@ Cada jugador recibe información como:
 - **Formato de datos**: Diccionario JSON listo para integración con base de datos NoSQL
 - **Ejemplo de salida**: `{ 'cocina': [3,2], 'pasillo_norte': [1], ... }`
 
+### 🎭 Sistema de roles
+- **Asignación automática**: Los roles se asignan automáticamente al crear la distribución
+- **ASESINO**: Siempre se asigna 1 jugador aleatorio
+- **COMPLICE**: 
+  - **4 jugadores**: 0 complices (array vacío)
+  - **5+ jugadores**: 1 complice (array con 1 elemento)
+- **Validación**: El COMPLICE siempre es diferente al ASESINO
+- **Formato de roles**: `{ "ASESINO": 3, "COMPLICE": [1] }`
+
 ## 💻 Contexto de desarrollo
 
 ### 🚀 Origen del proyecto
@@ -84,6 +93,7 @@ Este proyecto nació de una conversación de desarrollo donde se conceptualizó 
 6. **Preparación para BD**: Estructura de datos lista para integración con NoSQL
 7. **Sistema de autenticación**: Firebase con login anónimo para gestión de sesiones
 8. **Interfaz de usuario**: Sistema de login/logout con transiciones suaves
+9. **Sistema de roles**: Asignación automática de ASESINO y COMPLICE con validaciones
 
 ## 🚀 Requisitos del sistema
 
@@ -143,11 +153,14 @@ La nueva funcionalidad se ejecuta automáticamente cuando:
 **Funciones implementadas:**
 - `getUrlParams()`: Extrae parámetros X/Y de la URL
 - `distributePlayers(totalPlayers)`: Distribuye jugadores aleatoriamente
+- `assignPlayerRoles(totalPlayers)`: Asigna roles ASESINO y COMPLICE automáticamente
 - `initializeGame()`: Función principal que coordina la inicialización
 
 **Validaciones implementadas:**
 - Garantiza que al menos una estancia tenga 2+ jugadores
 - Distribuye el resto de jugadores aleatoriamente (0, 1, 2 o 3 por estancia)
+- Asigna roles según el número de jugadores (4 jugadores: solo ASESINO, 5+: ASESINO + COMPLICE)
+- Garantiza que ASESINO y COMPLICE sean jugadores diferentes
 - Genera diccionario JSON en consola para fácil copia
 
 ### Servidor de desarrollo
@@ -201,6 +214,7 @@ who-lies/
 - **Autenticación anónima** con Firebase para gestión de sesiones
 - **Sistema de login/logout** con interfaz moderna y transiciones suaves
 - **Gestión de estado** de autenticación automática
+- **Sistema de roles automático** con asignación de ASESINO y COMPLICE
 
 ## 🔧 Configuración del entorno
 
@@ -299,9 +313,16 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Estado reactivo**: Observer que maneja cambios de autenticación
 - **Manejo de errores**: Alertas informativas para problemas de conexión
 
+### 🎭 Sistema de Roles y Almacenamiento
+- **Asignación automática**: Los roles se asignan al crear la distribución
+- **Almacenamiento en Firebase**: Distribución + roles se guardan en Firestore
+- **Estructura de datos**: `{ playerDistribution: {...}, roles: { ASESINO: X, COMPLICE: [Y] } }`
+- **Sincronización**: Todos los jugadores pueden acceder a la información de roles
+
 ## 🔮 Próximas funcionalidades
 
 - [x] **Autenticación de jugadores** - Sistema de usuarios y sesiones con Firebase
+- [x] **Sistema de roles automático** - Asignación automática de ASESINO y COMPLICE
 - [ ] **Sistema de rondas del juego** - Gestión completa de fases del juego
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [ ] **Modo multijugador** - Sincronización en tiempo real entre jugadores
@@ -309,7 +330,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [ ] **Historial de partidas** - Seguimiento de juegos anteriores
 - [ ] **Diferentes escenarios** - Múltiples casos de misterio
 - [ ] **Sistema de pistas** - Pistas físicas y digitales integradas
-- [ ] **Integración con BD NoSQL** - Almacenamiento de distribuciones de jugadores
+- [x] **Integración con BD NoSQL** - Almacenamiento de distribuciones de jugadores y roles
 - [ ] **Sistema de partidas** - Gestión de múltiples sesiones de juego
 - [ ] **Persistencia de datos** - Almacenamiento de progreso y estado del juego
 

@@ -23,20 +23,45 @@ const db = firebase.firestore();
 auth.useDeviceLanguage();
 
 // Function to save player distribution to Firestore
-async function savePlayerDistribution(gameCode, totalPlayers, distribution) {
+async function savePlayerDistribution(gameCode, totalPlayers, distribution, roles) {
   try {
     const docRef = await db.collection('games').doc(gameCode).set({
       totalPlayers: totalPlayers,
       playerDistribution: distribution,
+      roles: roles,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: auth.currentUser.uid
     });
-    console.log('✅ Distribución de jugadores guardada en Firebase con ID:', docRef);
+    console.log('✅ Distribución de jugadores y roles guardados en Firebase con ID:', docRef);
     return docRef;
   } catch (error) {
     console.error('❌ Error al guardar distribución en Firebase:', error);
     throw error;
   }
+}
+
+// Function to assign roles to players
+function assignPlayerRoles(totalPlayers) {
+  const roles = {
+    ASESINO: 0,
+    COMPLICE: []
+  };
+  
+  // Siempre asignar un ASESINO (jugador aleatorio del 1 al totalPlayers)
+  roles.ASESINO = Math.floor(Math.random() * totalPlayers) + 1;
+  
+  // Para partidas de 5+ jugadores, asignar 1 COMPLICE
+  if (totalPlayers >= 5) {
+    let complice;
+    do {
+      complice = Math.floor(Math.random() * totalPlayers) + 1;
+    } while (complice === roles.ASESINO); // Asegurar que el COMPLICE sea diferente al ASESINO
+    
+    roles.COMPLICE.push(complice);
+  }
+  
+  console.log('🎭 Roles asignados:', roles);
+  return roles;
 }
 
 // Function to get player distribution from Firestore

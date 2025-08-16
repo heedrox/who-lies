@@ -523,10 +523,17 @@
                 console.log('📊 Distribución generada:');
                 console.log(playerDistribution);
                 
-                // Guardar en Firebase
-                await savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution);
+                // Asignar roles a los jugadores
+                console.log('🎭 Asignando roles...');
+                const playerRoles = assignPlayerRoles(params.totalPlayers);
                 
-                console.log('✅ Distribución guardada exitosamente en Firebase');
+                console.log('🎭 Roles asignados:');
+                console.log(playerRoles);
+                
+                // Guardar en Firebase (distribución + roles)
+                await savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution, playerRoles);
+                
+                console.log('✅ Distribución y roles guardados exitosamente en Firebase');
                 
             } catch (error) {
                 console.error('❌ Error al generar/guardar distribución:', error);
@@ -550,6 +557,11 @@
                 if (gameData) {
                     console.log('📋 Distribución recuperada:');
                     console.log(gameData.playerDistribution);
+                    
+                    if (gameData.roles) {
+                        console.log('🎭 Roles recuperados:');
+                        console.log(gameData.roles);
+                    }
                     
                     // Aquí podrías actualizar la UI para mostrar la distribución
                     // Por ahora solo la mostramos en consola
