@@ -82,6 +82,35 @@
             border-color: #ff4444;
         }
 
+        .players-in-room {
+            margin-top: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .player-tag {
+            background: rgba(139,0,0,0.3);
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            border: 1px solid rgba(139,0,0,0.5);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+        }
+
+        .room.updated {
+            animation: roomUpdate 0.5s ease-in-out;
+        }
+
+        @keyframes roomUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: rgba(255, 68, 68, 0.1); }
+            100% { transform: scale(1); }
+        }
+
         .room-text {
             font-size: 0.85rem;
             font-weight: bold;
@@ -307,6 +336,35 @@
             font-size: 1.1rem;
         }
 
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .connection-status.connected {
+            background: rgba(68, 255, 68, 0.2);
+            color: #44ff44;
+            border: 1px solid #44ff44;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
+        .connection-status.connecting {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+        }
+
         .user-id {
             font-family: monospace;
             background: rgba(139,0,0,0.1);
@@ -376,6 +434,9 @@
                 <h3>Tu Sesión de Juego</h3>
                 <div id="user-details">
                     <div class="user-id" id="user-id">Conectando...</div>
+                </div>
+                <div id="connection-status" class="connection-status connecting">
+                    🔄 Conectando a Firebase...
                 </div>
                 <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
             </div>
@@ -584,6 +645,9 @@
                 // Actualizar el perfil del jugador 1
                 updatePlayerProfile(params.playerNumber, playerRoles);
                 
+                // Suscribirse a actualizaciones en tiempo real
+                subscribeToGameUpdates(params.gameCode, handleGameUpdate);
+                
             } catch (error) {
                 console.error('❌ Error al generar/guardar distribución:', error);
                 alert('Error al generar la distribución del juego. Por favor, intenta de nuevo.');
@@ -636,7 +700,7 @@
             console.log(`🎭 Jugador ${playerNumber} - Rol: ${role}`);
         }
 
-        // Función para recuperar distribución existente
+        // Función para recuperar distribución existente y suscribirse a actualizaciones
         async function retrieveExistingDistribution() {
             const params = window.gameParams;
             
@@ -661,15 +725,208 @@
                         updatePlayerProfile(params.playerNumber, gameData.roles);
                     }
                     
-                    // Aquí podrías actualizar la UI para mostrar la distribución
-                    // Por ahora solo la mostramos en consola
+                    // Actualizar la UI con la distribución
+                    updateGameUI(gameData);
                 } else {
                     console.log('⏳ Esperando a que el jugador 1 genere la distribución...');
                 }
                 
+                // Suscribirse a actualizaciones en tiempo real
+                subscribeToGameUpdates(params.gameCode, handleGameUpdate);
+                
             } catch (error) {
                 console.error('❌ Error al recuperar distribución:', error);
             }
+        }
+
+        // Función para manejar actualizaciones del juego en tiempo real
+        function handleGameUpdate(gameData) {
+            if (!gameData) {
+                console.log('❌ El juego ya no existe');
+                return;
+            }
+            
+            console.log('🔄 Actualización en tiempo real recibida:', gameData);
+            
+            // Actualizar estado de conexión como conectado
+            updateConnectionStatus('connected', '🟢 Conectado a Firebase');
+            
+            // Actualizar la UI con los nuevos datos
+            updateGameUI(gameData);
+            
+            // Actualizar el perfil del jugador si hay roles
+            if (gameData.roles && window.gameParams) {
+                updatePlayerProfile(window.gameParams.playerNumber, gameData.roles);
+            }
+            
+            // Mostrar notificación de actualización
+            showUpdateNotification();
+        }
+
+        // Función para actualizar la UI del juego con los datos
+        function updateGameUI(gameData) {
+            if (!gameData.playerDistribution) return;
+            
+            console.log('🎨 Actualizando UI del juego...');
+            
+            // Aquí puedes agregar lógica para actualizar la visualización de las habitaciones
+            // Por ejemplo, mostrar qué jugadores están en cada habitación
+            updateRoomDisplay(gameData.playerDistribution);
+            
+            // Actualizar información del juego
+            updateGameInfo(gameData);
+        }
+
+        // Función para actualizar la visualización de las habitaciones
+        function updateRoomDisplay(distribution) {
+            const rooms = document.querySelectorAll('.room');
+            const roomNames = [
+                'cocina', 'pasillo_norte', 'habitacion_principal',
+                'comedor', 'centro', 'habitacion_invitados',
+                'torreon_oeste', 'pasillo_sur', 'torreon_este'
+            ];
+            
+            rooms.forEach((room, index) => {
+                const roomName = roomNames[index];
+                const players = distribution[roomName] || [];
+                
+                // Limpiar contenido anterior
+                room.innerHTML = '';
+                
+                // Agregar nombre de la habitación
+                const roomTitle = document.createElement('div');
+                roomTitle.className = 'room-text';
+                roomTitle.textContent = getRoomDisplayName(roomName);
+                room.appendChild(roomTitle);
+                
+                // Agregar jugadores en la habitación
+                if (players.length > 0) {
+                    const playersList = document.createElement('div');
+                    playersList.className = 'players-in-room';
+                    
+                    players.forEach(playerNum => {
+                        const playerSpan = document.createElement('span');
+                        playerSpan.className = 'player-tag';
+                        playerSpan.textContent = `J${playerNum}`;
+                        playersList.appendChild(playerSpan);
+                    });
+                    
+                    room.appendChild(playersList);
+                }
+                
+                // Agregar efecto visual de actualización
+                room.classList.add('updated');
+                setTimeout(() => {
+                    room.classList.remove('updated');
+                }, 500);
+            });
+        }
+
+        // Función para obtener el nombre de visualización de una habitación
+        function getRoomDisplayName(roomName) {
+            const roomNames = {
+                'cocina': 'COCINA',
+                'pasillo_norte': 'PASILLO NORTE',
+                'habitacion_principal': 'HABITACIÓN PRINCIPAL',
+                'comedor': 'COMEDOR',
+                'centro': '',
+                'habitacion_invitados': 'HABITACIÓN INVITADOS',
+                'torreon_oeste': 'TORREÓN OESTE',
+                'pasillo_sur': 'PASILLO SUR',
+                'torreon_este': 'TORREÓN ESTE'
+            };
+            return roomNames[roomName] || roomName;
+        }
+
+        // Función para actualizar la información del juego
+        function updateGameInfo(gameData) {
+            // Aquí puedes agregar lógica para actualizar la información del juego
+            // Por ejemplo, mostrar estadísticas, estado actual, etc.
+            console.log('📊 Información del juego actualizada');
+        }
+
+        // Función para mostrar notificación de actualización
+        function showUpdateNotification() {
+            // Crear notificación temporal
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(145deg, #ff4444, #cc0000);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: bold;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = '🔄 Juego actualizado';
+            
+            // Agregar estilos de animación
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Remover notificación después de 3 segundos
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+            
+            // Agregar animación de salida
+            const slideOutStyle = document.createElement('style');
+            slideOutStyle.textContent = `
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(slideOutStyle);
+        }
+
+        // Función para actualizar el estado de conexión
+        function updateConnectionStatus(status, message) {
+            const statusElement = document.getElementById('connection-status');
+            if (!statusElement) return;
+            
+            // Remover clases anteriores
+            statusElement.classList.remove('connected', 'disconnected', 'connecting');
+            
+            // Agregar nueva clase y mensaje
+            statusElement.classList.add(status);
+            statusElement.textContent = message;
+            
+            console.log(`🔗 Estado de conexión: ${status} - ${message}`);
+        }
+
+        // Función para manejar cambios en el estado de conexión de Firestore
+        function setupFirestoreConnectionListener() {
+            // Escuchar cambios en la conexión de Firestore
+            db.enableNetwork().then(() => {
+                console.log('🌐 Red habilitada para Firestore');
+            });
+            
+            // Verificar estado de conexión periódicamente
+            setInterval(() => {
+                db.enableNetwork().then(() => {
+                    updateConnectionStatus('connected', '🟢 Conectado a Firebase');
+                }).catch(() => {
+                    updateConnectionStatus('disconnected', '🔴 Desconectado de Firebase');
+                });
+            }, 10000); // Verificar cada 10 segundos
         }
 
         function endRound() {
@@ -690,6 +947,16 @@
 
         // Ejecutar inicialización cuando se carga la página
         window.addEventListener('load', initializeGame);
+
+        // Limpiar suscripciones cuando se cierre la página
+        window.addEventListener('beforeunload', () => {
+            unsubscribeFromGameUpdates();
+        });
+
+        // Limpiar suscripciones cuando se cambie de página
+        window.addEventListener('pagehide', () => {
+            unsubscribeFromGameUpdates();
+        });
 
         // Firebase Authentication Functions
         async function handleAnonymousLogin() {
@@ -751,6 +1018,9 @@
                 // Update user display
                 document.getElementById('user-id').textContent = user.uid;
                 
+                // Configurar listener de conexión de Firestore
+                setupFirestoreConnectionListener();
+                
                 // Si es el jugador 1, generar y guardar distribución
                 // Si no, intentar recuperar distribución existente
                 if (window.gameParams && window.gameParams.playerNumber === 1) {
@@ -768,6 +1038,9 @@
                 
                 // Reset user display
                 document.getElementById('user-id').textContent = 'Conectando...';
+                
+                // Actualizar estado de conexión como desconectado
+                updateConnectionStatus('disconnected', '🔴 No autenticado');
             }
         });
     </script>

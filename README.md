@@ -215,6 +215,11 @@ who-lies/
 - **Sistema de login/logout** con interfaz moderna y transiciones suaves
 - **Gestión de estado** de autenticación automática
 - **Sistema de roles automático** con asignación de ASESINO y COMPLICE
+- **Sincronización en tiempo real** con Firebase para actualizaciones instantáneas
+- **Indicador de estado de conexión** visual para monitorear la conectividad
+- **Notificaciones automáticas** cuando hay cambios en el juego
+- **Actualización automática de la UI** sin necesidad de recargar la página
+- **Gestión inteligente de recursos** con limpieza automática de suscripciones
 
 ## 🔧 Configuración del entorno
 
@@ -312,6 +317,9 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Authentication**: Configurado para autenticación anónima
 - **Estado reactivo**: Observer que maneja cambios de autenticación
 - **Manejo de errores**: Alertas informativas para problemas de conexión
+- **Firestore en tiempo real**: Suscripciones automáticas con `onSnapshot()`
+- **Gestión de estado**: Manejo automático de suscripciones y limpieza de recursos
+- **UI reactiva**: Actualización automática de la interfaz basada en cambios de Firebase
 
 ### 🎭 Sistema de Roles y Almacenamiento
 - **Asignación automática**: Los roles se asignan al crear la distribución
@@ -319,20 +327,29 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Estructura de datos**: `{ playerDistribution: {...}, roles: { ASESINO: X, COMPLICE: [Y] } }`
 - **Sincronización**: Todos los jugadores pueden acceder a la información de roles
 
+### 🔄 Sincronización en Tiempo Real
+- **Suscripciones automáticas**: Los jugadores se suscriben automáticamente a cambios en Firebase
+- **Actualizaciones instantáneas**: La UI se actualiza automáticamente sin recargar la página
+- **Estado de conexión**: Indicador visual del estado de conexión con Firebase
+- **Notificaciones**: Alertas automáticas cuando hay actualizaciones del juego
+- **Gestión de recursos**: Limpieza automática de suscripciones al cerrar sesión
+- **Efectos visuales**: Animaciones y transiciones suaves en las actualizaciones
+
 ## 🔮 Próximas funcionalidades
 
 - [x] **Autenticación de jugadores** - Sistema de usuarios y sesiones con Firebase
 - [x] **Sistema de roles automático** - Asignación automática de ASESINO y COMPLICE
+- [x] **Sincronización en tiempo real** - Suscripciones automáticas a Firebase para actualizaciones instantáneas
 - [ ] **Sistema de rondas del juego** - Gestión completa de fases del juego
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
-- [ ] **Modo multijugador** - Sincronización en tiempo real entre jugadores
+- [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
 - [ ] **Historial de partidas** - Seguimiento de juegos anteriores
 - [ ] **Diferentes escenarios** - Múltiples casos de misterio
 - [ ] **Sistema de pistas** - Pistas físicas y digitales integradas
 - [x] **Integración con BD NoSQL** - Almacenamiento de distribuciones de jugadores y roles
 - [ ] **Sistema de partidas** - Gestión de múltiples sesiones de juego
-- [ ] **Persistencia de datos** - Almacenamiento de progreso y estado del juego
+- [x] **Persistencia de datos** - Almacenamiento de progreso y estado del juego
 
 ## 🤝 Contribuir al proyecto
 

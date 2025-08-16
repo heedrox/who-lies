@@ -22,6 +22,9 @@ const db = firebase.firestore();
 // Enable anonymous authentication
 auth.useDeviceLanguage();
 
+// Variable global para almacenar la suscripción activa
+let activeGameSubscription = null;
+
 // Function to save player distribution to Firestore
 async function savePlayerDistribution(gameCode, totalPlayers, distribution, roles) {
   try {
@@ -30,7 +33,8 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
       playerDistribution: distribution,
       roles: roles,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: auth.currentUser.uid
+      createdBy: auth.currentUser.uid,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     });
     console.log('✅ Distribución de jugadores y roles guardados en Firebase con ID:', docRef);
     return docRef;
@@ -81,6 +85,102 @@ async function getPlayerDistribution(gameCode) {
   }
 }
 
+// Function to subscribe to real-time updates for a specific game
+function subscribeToGameUpdates(gameCode, onUpdate) {
+  // Cancelar suscripción anterior si existe
+  if (activeGameSubscription) {
+    activeGameSubscription();
+    console.log('🔄 Suscripción anterior cancelada');
+  }
+  
+  console.log('🔔 Suscribiéndose a actualizaciones del juego:', gameCode);
+  
+  // Crear nueva suscripción en tiempo real
+  activeGameSubscription = db.collection('games').doc(gameCode)
+    .onSnapshot((doc) => {
+      if (doc.exists) {
+        const gameData = doc.data();
+        console.log('🔄 Datos del juego actualizados en tiempo real:', gameData);
+        
+        // Llamar a la función de callback con los datos actualizados
+        if (onUpdate && typeof onUpdate === 'function') {
+          onUpdate(gameData);
+        }
+      } else {
+        console.log('❌ El documento del juego ya no existe');
+        // Llamar a la función de callback con null para indicar que no hay datos
+        if (onUpdate && typeof onUpdate === 'function') {
+          onUpdate(null);
+        }
+      }
+    }, (error) => {
+      console.error('❌ Error en la suscripción en tiempo real:', error);
+    });
+  
+  console.log('✅ Suscripción activa para el juego:', gameCode);
+  return activeGameSubscription;
+}
+
+// Function to unsubscribe from game updates
+function unsubscribeFromGameUpdates() {
+  if (activeGameSubscription) {
+    activeGameSubscription();
+    activeGameSubscription = null;
+    console.log('🔇 Suscripción cancelada');
+  }
+}
+
+// Function to update game state in Firestore
+async function updateGameState(gameCode, updates) {
+  try {
+    await db.collection('games').doc(gameCode).update({
+      ...updates,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Estado del juego actualizado en Firebase');
+  } catch (error) {
+    console.error('❌ Error al actualizar estado del juego:', error);
+    throw error;
+  }
+}
+
+// Function to add a player move to the game
+async function addPlayerMove(gameCode, playerNumber, fromRoom, toRoom, timestamp) {
+  try {
+    const moveData = {
+      playerNumber: playerNumber,
+      fromRoom: fromRoom,
+      toRoom: toRoom,
+      timestamp: timestamp || firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    await db.collection('games').doc(gameCode).collection('moves').add(moveData);
+    console.log('✅ Movimiento del jugador registrado:', moveData);
+  } catch (error) {
+    console.error('❌ Error al registrar movimiento:', error);
+    throw error;
+  }
+}
+
+// Function to get player moves for a game
+async function getPlayerMoves(gameCode) {
+  try {
+    const movesSnapshot = await db.collection('games').doc(gameCode).collection('moves')
+      .orderBy('timestamp', 'desc')
+      .get();
+    
+    const moves = [];
+    movesSnapshot.forEach(doc => {
+      moves.push({ id: doc.id, ...doc.data() });
+    });
+    
+    console.log('📋 Movimientos recuperados:', moves);
+    return moves;
+  } catch (error) {
+    console.error('❌ Error al obtener movimientos:', error);
+    throw error;
+  }
+}
 
 // Function to sign in anonymously
 async function signInAnonymously() {
@@ -95,8 +195,6 @@ async function signInAnonymously() {
   }
 }
 
-
-
 // Function to get current user
 function getCurrentUser() {
   return auth.currentUser;
@@ -105,6 +203,9 @@ function getCurrentUser() {
 // Function to sign out
 async function signOut() {
   try {
+    // Cancelar suscripción antes de desconectar
+    unsubscribeFromGameUpdates();
+    
     await auth.signOut();
     console.log('Usuario desconectado');
   } catch (error) {
@@ -122,6 +223,9 @@ auth.onAuthStateChanged((user) => {
     document.getElementById('game-content').style.display = 'block';
   } else {
     console.log('Usuario no autenticado');
+    // Cancelar suscripción cuando el usuario se desconecta
+    unsubscribeFromGameUpdates();
+    
     // Show login section and hide game content
     document.getElementById('login-section').style.display = 'block';
     document.getElementById('game-content').style.display = 'none';
