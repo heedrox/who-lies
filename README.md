@@ -359,12 +359,14 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Selección de víctima**: Interfaz especial para que el ASESINO seleccione a quién matar
 - **Restricciones de víctimas**: Solo puede matar a jugadores en su misma habitación
 - **Opciones de acción**: Puede elegir matar a UNO y SOLO UNO, o decidir no matar a nadie
-- **Flujo obligatorio**: Debe seleccionar víctima ANTES de poder moverse
+- **Flujo optimizado**: Selección de víctima y movimiento se ejecutan en un solo paso
+- **Interfaz compacta**: Modal de selección que aparece solo cuando es necesario
+- **Ejecución automática**: Al seleccionar víctima, el movimiento se ejecuta automáticamente
 - **Base de datos**: Campo `nextDeath: X` se actualiza al seleccionar víctima
 - **Procesamiento automático**: Al avanzar ronda, se actualiza el array `deads: []`
 - **Reset automático**: Array de muertos se vacía al reiniciar el juego
 - **Visualización de muertos**: Los jugadores muertos se muestran con emoji 💀 y estilo tachado
-- **Interfaz intuitiva**: Selección visual con opciones claras y confirmación obligatoria
+- **Interfaz intuitiva**: Selección visual con opciones claras y ejecución automática
 
 ### 🔄 Sincronización en Tiempo Real
 - **Suscripciones automáticas**: Los jugadores se suscriben automáticamente a cambios en Firebase
@@ -412,6 +414,15 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Botón inteligente**: Cambia de "TERMINAR RONDA" a "SIGUIENTE RONDA" según el estado
 - **Finalización automática**: La ronda se finaliza automáticamente cuando todos han movido
 - **Recálculo de visibilidad**: Nueva distribución y visibilidad se calculan automáticamente al finalizar
+
+### 🔪 Mecánica de Asesinato Optimizada
+- **Flujo unificado**: Selección de víctima y movimiento se ejecutan en un solo paso
+- **Interfaz compacta**: Modal de selección que aparece solo cuando el ASESINO intenta moverse
+- **Ejecución automática**: Al seleccionar víctima, el movimiento se ejecuta inmediatamente
+- **Sin confirmaciones adicionales**: Elimina la necesidad de botones separados de confirmación
+- **Mejor experiencia de usuario**: Interfaz más fluida y menos interruptiva
+- **Mantenimiento de funcionalidad**: Todas las opciones de asesinato siguen disponibles
+- **Integración perfecta**: El sistema de asesinato se integra naturalmente con el sistema de movimiento
 
 ### 🎨 Interfaz de Usuario y Experiencia
 - **Botón centrado**: Botón "TERMINAR RONDA" perfectamente centrado en el footer
