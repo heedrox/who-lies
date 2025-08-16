@@ -161,6 +161,7 @@
             font-weight: bold;
             border: 1px solid rgba(139,0,0,0.5);
             text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+            white-space: nowrap;
         }
 
         .room.updated {
@@ -2002,7 +2003,6 @@
                             // Marcar jugadores muertos
                             if (window.gameData && window.gameData.deads && window.gameData.deads.includes(playerNum)) {
                                 playerSpan.style.opacity = '0.5';
-                                playerSpan.style.textDecoration = 'line-through';
                                 playerSpan.style.background = 'rgba(139,0,0,0.7)';
                                 playerSpan.textContent = `💀${playerNum}`;
                             } else {
