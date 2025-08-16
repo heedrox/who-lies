@@ -29,10 +29,7 @@ El juego se desarrolla en una mansión dividida en 9 estancias organizadas en un
 └─────────────────┴─────────────────┴─────────────────────┘
 ```
 
-### 🛠️ Elementos del juego
-- **VENENOS**: Arsénico, Cianuro
-- **HERRAMIENTAS**: Llave inglesa, Destornillador  
-- **ARMAS**: Pistola, Escopeta
+
 
 ### 👥 Sistema de jugadores
 - Los jugadores se mueven entre estancias
@@ -220,6 +217,7 @@ who-lies/
 - **Notificaciones automáticas** cuando hay cambios en el juego
 - **Actualización automática de la UI** sin necesidad de recargar la página
 - **Gestión inteligente de recursos** con limpieza automática de suscripciones
+- **Resaltado visual de ubicación** - La habitación del jugador actual se resalta en rojo con animaciones
 
 ## 🔧 Configuración del entorno
 
@@ -334,6 +332,14 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Notificaciones**: Alertas automáticas cuando hay actualizaciones del juego
 - **Gestión de recursos**: Limpieza automática de suscripciones al cerrar sesión
 - **Efectos visuales**: Animaciones y transiciones suaves en las actualizaciones
+
+### 🎯 Resaltado Visual de Ubicación
+- **Habitación resaltada**: La habitación donde está el jugador actual se muestra con fondo rojo
+- **Animaciones**: Efectos de pulso y sombras para destacar la ubicación actual
+- **Indicador visual**: Emoji de ubicación (📍) en la esquina superior derecha de la habitación
+- **Tag del jugador**: El número del jugador actual se resalta con animaciones especiales
+- **Información dinámica**: La UI se actualiza automáticamente mostrando la ubicación actual
+- **Perfil actualizado**: El perfil del jugador muestra su ubicación actual en tiempo real
 
 ## 🔮 Próximas funcionalidades
 

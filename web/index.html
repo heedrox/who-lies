@@ -105,6 +105,78 @@
             animation: roomUpdate 0.5s ease-in-out;
         }
 
+        /* Estilo para resaltar la habitación del jugador actual */
+        .room.current-player-room {
+            background: linear-gradient(145deg, #8b0000, #a52a2a) !important;
+            border-color: #ff4444 !important;
+            border-width: 3px !important;
+            box-shadow: 0 4px 20px rgba(139, 0, 0, 0.6) !important;
+            transform: scale(1.02);
+            animation: currentPlayerPulse 2s ease-in-out infinite;
+            position: relative;
+            z-index: 5;
+        }
+
+        .room.current-player-room::before {
+            content: '📍';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1.2rem;
+            background: #ff4444;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .room.current-player-room:hover {
+            background: linear-gradient(145deg, #a52a2a, #c04040) !important;
+            border-color: #ff6666 !important;
+            box-shadow: 0 6px 25px rgba(139, 0, 0, 0.8) !important;
+            animation: none;
+        }
+
+        /* Animación de pulso para la habitación del jugador actual */
+        @keyframes currentPlayerPulse {
+            0%, 100% { 
+                box-shadow: 0 4px 20px rgba(139, 0, 0, 0.6);
+                transform: scale(1.02);
+            }
+            50% { 
+                box-shadow: 0 4px 25px rgba(139, 0, 0, 0.8);
+                transform: scale(1.03);
+            }
+        }
+
+        /* Estilo para resaltar el tag del jugador actual */
+        .player-tag.current-player {
+            background: linear-gradient(145deg, #ff4444, #cc0000) !important;
+            border-color: #ffffff !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
+            transform: scale(1.1);
+            animation: currentPlayerTagPulse 1.5s ease-in-out infinite;
+        }
+
+        /* Animación para el tag del jugador actual */
+        @keyframes currentPlayerTagPulse {
+            0%, 100% { 
+                transform: scale(1.1);
+                box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
+            }
+            50% { 
+                transform: scale(1.15);
+                box-shadow: 0 0 20px rgba(255, 68, 68, 0.9);
+            }
+        }
+
         @keyframes roomUpdate {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); background: rgba(255, 68, 68, 0.1); }
@@ -124,35 +196,7 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
 
-        .game-info {
-            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
-            border: 2px solid #8b0000;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
 
-        .game-info h2 {
-            color: #ff4444;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 1.3rem;
-        }
-
-        .info-list {
-            list-style: none;
-        }
-
-        .info-list li {
-            background: rgba(139,0,0,0.1);
-            margin-bottom: 12px;
-            padding: 12px;
-            border-radius: 6px;
-            border-left: 4px solid #ff4444;
-            font-size: 0.95rem;
-            line-height: 1.3;
-        }
 
         .footer {
             background: linear-gradient(90deg, #8b0000 0%, #a52a2a 100%);
@@ -186,47 +230,7 @@
             transform: translateY(0);
         }
 
-        .game-elements {
-            margin-bottom: 25px;
-        }
 
-        .element-category {
-            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
-            border: 2px solid #8b0000;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: left;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            opacity: 0.8;
-        }
-
-        .element-category:hover {
-            opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139,0,0,0.4);
-        }
-
-        .element-line {
-            font-size: 0.7rem;
-            line-height: 1.4;
-            margin-bottom: 8px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-            opacity: 0.9;
-        }
-
-        .element-line:last-child {
-            margin-bottom: 0;
-        }
-
-        .element-category:hover .element-line {
-            opacity: 1;
-        }
-
-        .element-line strong {
-            color: #ff4444;
-            margin-right: 5px;
-        }
 
         /* Estilos para el perfil del jugador */
         .player-profile {
@@ -267,6 +271,8 @@
             color: #44ff44;
             text-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
         }
+
+
 
         /* Login section styles */
         .login-section {
@@ -477,13 +483,7 @@
                 </div>
             </div>
 
-            <div class="game-elements">
-                <div class="element-category">
-                    <div class="element-line"><strong>VENENOS:</strong> Arsénico, Cianuro</div>
-                    <div class="element-line"><strong>HERRAMIENTAS:</strong> Llave inglesa, Destornillador</div>
-                    <div class="element-line"><strong>ARMAS:</strong> Pistola, Escopeta</div>
-                </div>
-            </div>
+
 
             <!-- Perfil del jugador -->
             <div id="player-profile" class="player-profile" style="display: none;">
@@ -491,20 +491,13 @@
                 <div id="player-role" class="profile-title">Cargando...</div>
             </div>
 
-            <div class="game-info">
-                <h2>ANTES DEL CRIMEN</h2>
-                <ul class="info-list">
-                    <li>Estás en HABITACIÓN INVITADOS.</li>
-                    <li>Contigo ves a JUGADOR 2.</li>
-                    <li>Puedes ver en la HABITACIÓN PRINCIPAL a JUGADOR 4.</li>
-                </ul>
-            </div>
+
         </div>
     </main>
 
-    <footer id="game-footer" class="footer" style="display: none;">
-        <button class="end-round-btn" onclick="endRound()">TERMINAR RONDA</button>
-    </footer>
+            <footer id="game-footer" class="footer" style="display: none;">
+            <button class="end-round-btn" onclick="endRound()">TERMINAR RONDA</button>
+        </footer>
 
     <!-- Firebase Configuration -->
     <script src="firebase-config.js"></script>
@@ -775,9 +768,6 @@
             // Aquí puedes agregar lógica para actualizar la visualización de las habitaciones
             // Por ejemplo, mostrar qué jugadores están en cada habitación
             updateRoomDisplay(gameData.playerDistribution);
-            
-            // Actualizar información del juego
-            updateGameInfo(gameData);
         }
 
         // Función para actualizar la visualización de las habitaciones
@@ -789,6 +779,13 @@
                 'torreon_oeste', 'pasillo_sur', 'torreon_este'
             ];
             
+            // Obtener el número del jugador actual
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            
+            console.log('🔄 Actualizando visualización de habitaciones...');
+            console.log('🎮 Distribución recibida:', distribution);
+            console.log('👤 Jugador actual:', currentPlayer);
+            
             for (let i = 0; i < rooms.length; i++) {
                 const room = rooms[i];
                 const roomName = roomNames[i];
@@ -799,14 +796,27 @@
                 }
                 
                 const players = distribution[roomName] || [];
+                console.log(`🏠 Habitación ${roomName}: ${players.length} jugadores - [${players.join(', ')}]`);
                 
                 // Limpiar contenido anterior
                 room.innerHTML = '';
                 
+                // Limpiar clases de resaltado anteriores
+                room.classList.remove('current-player-room');
+                
+                // Obtener el nombre de visualización de la habitación
+                const roomDisplayName = getRoomDisplayName(roomName);
+                
+                // Verificar si el jugador actual está en esta habitación
+                if (currentPlayer && players.includes(currentPlayer)) {
+                    room.classList.add('current-player-room');
+                    console.log(`🎯 Habitación ${roomDisplayName} resaltada para jugador ${currentPlayer}`);
+                }
+                
                 // Agregar nombre de la habitación
                 const roomTitle = document.createElement('div');
                 roomTitle.className = 'room-text';
-                roomTitle.textContent = getRoomDisplayName(roomName);
+                roomTitle.textContent = roomDisplayName;
                 room.appendChild(roomTitle);
                 
                 // Mostrar jugadores en la habitación
@@ -817,11 +827,18 @@
                     players.forEach(playerNum => {
                         const playerSpan = document.createElement('span');
                         playerSpan.className = 'player-tag';
+                        // Resaltar el jugador actual con un estilo especial
+                        if (playerNum === currentPlayer) {
+                            playerSpan.classList.add('current-player');
+                        }
                         playerSpan.textContent = `J${playerNum}`;
                         playersList.appendChild(playerSpan);
                     });
                     
                     room.appendChild(playersList);
+                    console.log(`✅ Habitación ${roomDisplayName} actualizada con ${players.length} jugadores`);
+                } else {
+                    console.log(`✅ Habitación ${roomDisplayName} actualizada (sin jugadores)`);
                 }
                 
                 // Agregar efecto visual de actualización
@@ -845,15 +862,13 @@
                 'pasillo_sur': 'PASILLO SUR',
                 'torreon_este': 'TORREÓN ESTE'
             };
-            return roomNames[roomName] || roomName;
+            
+            const displayName = roomNames[roomName] || roomName;
+            console.log(`🏷️ Mapeo de habitación: ${roomName} -> ${displayName}`);
+            return displayName;
         }
 
-        // Función para actualizar la información del juego
-        function updateGameInfo(gameData) {
-            // Aquí puedes agregar lógica para actualizar la información del juego
-            // Por ejemplo, mostrar estadísticas, estado actual, etc.
-            console.log('📊 Información del juego actualizada');
-        }
+
 
 
 
@@ -893,6 +908,8 @@
             // Aquí puedes agregar la lógica para terminar la ronda
             alert('Ronda terminada. Preparando siguiente fase del juego...');
         }
+
+
 
         // Agregar efectos de hover adicionales
         document.querySelectorAll('.room').forEach(room => {
