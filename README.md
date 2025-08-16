@@ -35,6 +35,9 @@ El juego se desarrolla en una mansión dividida en 9 estancias organizadas en un
 - Los jugadores se mueven entre estancias
 - Pueden ver a otros jugadores en estancias específicas
 - La información se comparte de forma parcial para fomentar la deducción
+- **Selección de jugador**: URL con formato `?/g/CODIGO_JUEGO/p/x/TOTAL_JUGADORES` muestra pantalla de selección
+- **Pantalla de selección**: Muestra opciones JUG. 1, JUG. 2, ..., JUG. N para elegir número de jugador
+- **Redirección automática**: Al seleccionar jugador, redirige a `?/g/CODIGO_JUEGO/p/NUMERO_JUGADOR/TOTAL_JUGADORES`
 
 ## 🔍 Mecánicas de juego
 
@@ -423,6 +426,10 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Mejor experiencia de usuario**: Interfaz más fluida y menos interruptiva
 - **Mantenimiento de funcionalidad**: Todas las opciones de asesinato siguen disponibles
 - **Integración perfecta**: El sistema de asesinato se integra naturalmente con el sistema de movimiento
+- **Filtro inteligente de víctimas**: Solo se muestran jugadores vivos como opciones de asesinato
+- **Modal adaptativo**: Interfaz simplificada cuando no hay víctimas disponibles
+- **Actualización garantizada de BD**: Siempre se registra la decisión del ASESINO en Firebase
+- **Sistema robusto**: Maneja casos edge como habitaciones sin víctimas vivas
 
 ### 🎨 Interfaz de Usuario y Experiencia
 - **Botón centrado**: Botón "TERMINAR RONDA" perfectamente centrado en el footer
@@ -441,6 +448,10 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Sistema de probabilidad centralizado**: Aplicación única durante la generación de distribución
 - **Consistencia de datos**: Visibilidad mantenida constante durante toda la partida
 - **Optimización de rendimiento**: Sin recálculos innecesarios de visibilidad
+- **Eliminación de código obsoleto**: Remoción completa de interfaz antigua de asesinato
+- **Funciones modulares**: Separación clara entre modal completo y simplificado
+- **Logs de depuración**: Sistema de logging para facilitar el desarrollo y debugging
+- **Manejo de casos edge**: Validaciones robustas para situaciones especiales
 
 ### 🛡️ Seguridad y Balance del Juego
 - **Protección contra trampas**: Roles de otros jugadores ocultos para el jugador 1
@@ -456,7 +467,8 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de roles automático** - Asignación automática de ASESINO y COMPLICE
 - [x] **Sincronización en tiempo real** - Suscripciones automáticas a Firebase para actualizaciones instantáneas
 - [x] **Sistema de rondas del juego** - Gestión completa de fases del juego con modo de movimiento
-- [x] **Sistema de asesinatos del ASESINO** - Interfaz de selección de víctima y gestión de muertes
+- [x] **Sistema de asesinatos del ASESINO** - Interfaz de selección de víctima y gestión de muertes (optimizado)
+- [x] **Mecánica de asesinato unificada** - Ejecución automática de kill + movimiento en un paso
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo

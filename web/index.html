@@ -541,7 +541,65 @@
             transform: translateY(0);
         }
 
+        /* Player Selection Styles */
+        .player-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
 
+        .player-option {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .player-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+            border-color: #ff4444;
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+        }
+
+        .player-option:active {
+            transform: translateY(-1px);
+        }
+
+        .player-option.selected {
+            background: linear-gradient(145deg, #8b0000, #a52a2a);
+            border-color: #ff4444;
+            box-shadow: 0 6px 20px rgba(139,0,0,0.6);
+        }
+
+        .player-option.selected:hover {
+            background: linear-gradient(145deg, #a52a2a, #c04040);
+            border-color: #ff6666;
+        }
+
+        .player-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ff4444;
+        }
+
+        .player-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
         .loading {
             opacity: 0.7;
@@ -765,6 +823,14 @@
             </button>
         </div>
 
+        <!-- Player Selection Section -->
+        <div id="player-selection-section" class="login-section" style="display: none;">
+            <h2 class="login-title">SELECCIONE JUGADOR</h2>
+            <div id="player-options" class="player-options">
+                <!-- Player options will be generated dynamically -->
+            </div>
+        </div>
+
         <!-- Game Content (hidden until login) -->
         <div id="game-content" style="display: none;">
             <!-- User Info (hidden for production, visible for debugging) -->
@@ -843,14 +909,32 @@
             const queryString = window.location.search;
             
             // Buscar en query string como ?/g/CODIGO_JUEGO/p/X/Y
-            const match = queryString.match(/\?\/g\/([^\/]+)\/p\/(\d+)\/(\d+)/);
+            const match = queryString.match(/\?\/g\/([^\/]+)\/p\/([^\/]+)\/(\d+)/);
             
             if (match) {
-                return {
-                    gameCode: match[1],
-                    playerNumber: parseInt(match[2]),
-                    totalPlayers: parseInt(match[3])
-                };
+                const playerNumber = match[2];
+                const totalPlayers = parseInt(match[3]);
+                
+                // Si el número de jugador es "x" o "X", mostrar pantalla de selección
+                if (playerNumber.toLowerCase() === 'x') {
+                    return {
+                        gameCode: match[1],
+                        playerNumber: 'x',
+                        totalPlayers: totalPlayers,
+                        needsPlayerSelection: true
+                    };
+                }
+                
+                // Si es un número válido, procesar normalmente
+                const playerNum = parseInt(playerNumber);
+                if (!isNaN(playerNum)) {
+                    return {
+                        gameCode: match[1],
+                        playerNumber: playerNum,
+                        totalPlayers: totalPlayers,
+                        needsPlayerSelection: false
+                    };
+                }
             }
             
             // Fallback: buscar en query string como ?X/Y (formato anterior)
@@ -860,7 +944,8 @@
                 return {
                     gameCode: 'default',
                     playerNumber: parseInt(fallbackMatch[1]),
-                    totalPlayers: parseInt(fallbackMatch[2])
+                    totalPlayers: parseInt(fallbackMatch[2]),
+                    needsPlayerSelection: false
                 };
             }
             
@@ -1028,13 +1113,70 @@
             
             if (params) {
                 console.log(`🎮 Código del juego: ${params.gameCode}`);
-                console.log(`🎮 Jugador ${params.playerNumber} de ${params.totalPlayers}`);
+                console.log(`🎮 Total de jugadores: ${params.totalPlayers}`);
                 
                 // Guardar parámetros globalmente para usar después de la autenticación
                 window.gameParams = params;
+                
+                if (params.needsPlayerSelection) {
+                    console.log('🎮 Parámetros de selección de jugador detectados, esperando autenticación...');
+                    // No mostrar la pantalla de selección aquí, se mostrará después del login
+                } else {
+                    console.log(`🎮 Jugador ${params.playerNumber} de ${params.totalPlayers}`);
+                }
             } else {
                 console.log('🎮 Juego iniciado sin parámetros de URL');
             }
+        }
+
+        // Función para mostrar la pantalla de selección de jugador
+        function showPlayerSelectionScreen(params) {
+            console.log('🎮 Mostrando pantalla de selección de jugador');
+            
+            // Ocultar todas las secciones
+            const loginSection = document.getElementById('login-section');
+            const gameContent = document.getElementById('game-content');
+            const gameFooter = document.getElementById('game-footer');
+            
+            if (loginSection) loginSection.style.display = 'none';
+            if (gameContent) gameContent.style.display = 'none';
+            if (gameFooter) gameFooter.style.display = 'none';
+            
+            // Mostrar sección de selección de jugador
+            const playerSelectionSection = document.getElementById('player-selection-section');
+            if (playerSelectionSection) {
+                playerSelectionSection.style.display = 'block';
+            }
+            
+            // Generar opciones de jugadores
+            const playerOptions = document.getElementById('player-options');
+            if (playerOptions) {
+                playerOptions.innerHTML = '';
+                
+                for (let i = 1; i <= params.totalPlayers; i++) {
+                    const playerOption = document.createElement('div');
+                    playerOption.className = 'player-option';
+                    playerOption.onclick = () => selectPlayer(i, params);
+                    
+                    playerOption.innerHTML = `
+                        <div class="player-number">${i}</div>
+                        <div class="player-label">JUGADOR</div>
+                    `;
+                    
+                    playerOptions.appendChild(playerOption);
+                }
+            }
+        }
+        
+        // Función para seleccionar un jugador
+        function selectPlayer(playerNumber, params) {
+            console.log(`🎮 Jugador ${playerNumber} seleccionado`);
+            
+            // Crear nueva URL con el jugador seleccionado
+            const newUrl = `?/g/${params.gameCode}/p/${playerNumber}/${params.totalPlayers}`;
+            
+            // Redirigir a la nueva URL
+            window.location.href = newUrl;
         }
 
         // Función para generar y guardar distribución después de la autenticación
@@ -2442,40 +2584,70 @@
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 console.log('Usuario autenticado:', user.uid);
-                // Hide login section and show game content
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('game-content').style.display = 'block';
-                document.getElementById('game-footer').style.display = 'block';
                 
-                // Update user display
-                document.getElementById('user-id').textContent = user.uid;
-                
-                // Mostrar botón "TERMINAR RONDA" solo para jugador 1
-                const endRoundBtn = document.querySelector('.end-round-btn');
-                if (endRoundBtn && window.gameParams && window.gameParams.playerNumber === 1) {
-                    endRoundBtn.style.display = 'block';
-                } else {
-                    endRoundBtn.style.display = 'none';
+                // Verificar si necesitamos mostrar la pantalla de selección de jugador
+                if (window.gameParams && window.gameParams.needsPlayerSelection) {
+                    console.log('🎮 Mostrando pantalla de selección de jugador después de autenticación');
+                    showPlayerSelectionScreen(window.gameParams);
+                    return; // No continuar con el flujo normal del juego
                 }
                 
-                // Mostrar botón "REINICIAR JUEGO" solo para jugador 1
-                const restartBtn = document.getElementById('restart-game-btn');
-                if (restartBtn && window.gameParams && window.gameParams.playerNumber === 1) {
-                    restartBtn.style.display = 'block';
+                // Solo mostrar el juego si ya tenemos un número de jugador válido
+                if (window.gameParams && typeof window.gameParams.playerNumber === 'number') {
+                    console.log('🎮 Mostrando juego para jugador', window.gameParams.playerNumber);
+                    
+                    // Hide login section and show game content
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('player-selection-section').style.display = 'none';
+                    document.getElementById('game-content').style.display = 'block';
+                    document.getElementById('game-footer').style.display = 'block';
+                    
+                    // Update user display
+                    document.getElementById('user-id').textContent = user.uid;
+                    
+                    // Mostrar botón "TERMINAR RONDA" solo para jugador 1
+                    const endRoundBtn = document.querySelector('.end-round-btn');
+                    if (endRoundBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                        endRoundBtn.style.display = 'block';
+                    } else {
+                        endRoundBtn.style.display = 'none';
+                    }
+                    
+                    // Mostrar botón "REINICIAR JUEGO" solo para jugador 1
+                    const restartBtn = document.getElementById('restart-game-btn');
+                    if (restartBtn && window.gameParams && window.gameParams.playerNumber === 1) {
+                        restartBtn.style.display = 'block';
+                    } else {
+                        restartBtn.style.display = 'none';
+                    }
+                    
+                    // Configurar listener de conexión de Firestore
+                    setupFirestoreConnectionListener();
+                    
+                    // Solo recuperar distribución existente, no generar nueva
+                    await retrieveExistingDistribution();
                 } else {
-                    restartBtn.style.display = 'none';
+                    console.log('🎮 Usuario autenticado pero sin parámetros de juego válidos');
+                    // Mantener en la pantalla de login hasta que se seleccione un jugador
+                    document.getElementById('login-section').style.display = 'block';
+                    document.getElementById('player-selection-section').style.display = 'none';
+                    document.getElementById('game-content').style.display = 'none';
+                    document.getElementById('game-footer').style.display = 'none';
                 }
-                
-                // Configurar listener de conexión de Firestore
-                setupFirestoreConnectionListener();
-                
-                // Solo recuperar distribución existente, no generar nueva
-                await retrieveExistingDistribution();
                 
             } else {
                 console.log('Usuario no autenticado');
+                
+                // Verificar si necesitamos mostrar la pantalla de selección de jugador
+                if (window.gameParams && window.gameParams.needsPlayerSelection) {
+                    console.log('🎮 Mostrando pantalla de selección de jugador sin autenticación');
+                    showPlayerSelectionScreen(window.gameParams);
+                    return; // No mostrar login si necesitamos selección de jugador
+                }
+                
                 // Show login section and hide game content
                 document.getElementById('login-section').style.display = 'block';
+                document.getElementById('player-selection-section').style.display = 'none';
                 document.getElementById('game-content').style.display = 'none';
                 document.getElementById('game-footer').style.display = 'none';
                 
