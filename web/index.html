@@ -111,6 +111,12 @@
             100% { transform: scale(1); }
         }
 
+        /* Habitación del centro completamente oculta */
+        .room:nth-child(5) {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         .room-text {
             font-size: 0.85rem;
             font-weight: bold;
@@ -538,7 +544,7 @@
         function distributePlayers(totalPlayers) {
             const rooms = [
                 'cocina', 'pasillo_norte', 'habitacion_principal',
-                'comedor', 'centro', 'habitacion_invitados',
+                'comedor', 'habitacion_invitados',
                 'torreon_oeste', 'pasillo_sur', 'torreon_este'
             ];
             
@@ -758,9 +764,6 @@
             if (gameData.roles && window.gameParams) {
                 updatePlayerProfile(window.gameParams.playerNumber, gameData.roles);
             }
-            
-            // Mostrar notificación de actualización
-            showUpdateNotification();
         }
 
         // Función para actualizar la UI del juego con los datos
@@ -786,8 +789,15 @@
                 'torreon_oeste', 'pasillo_sur', 'torreon_este'
             ];
             
-            rooms.forEach((room, index) => {
-                const roomName = roomNames[index];
+            for (let i = 0; i < rooms.length; i++) {
+                const room = rooms[i];
+                const roomName = roomNames[i];
+                
+                // Saltar la habitación del centro - mantenerla como está
+                if (roomName === 'centro') {
+                    continue;
+                }
+                
                 const players = distribution[roomName] || [];
                 
                 // Limpiar contenido anterior
@@ -799,7 +809,7 @@
                 roomTitle.textContent = getRoomDisplayName(roomName);
                 room.appendChild(roomTitle);
                 
-                // Agregar jugadores en la habitación
+                // Mostrar jugadores en la habitación
                 if (players.length > 0) {
                     const playersList = document.createElement('div');
                     playersList.className = 'players-in-room';
@@ -819,7 +829,7 @@
                 setTimeout(() => {
                     room.classList.remove('updated');
                 }, 500);
-            });
+            }
         }
 
         // Función para obtener el nombre de visualización de una habitación
@@ -829,7 +839,7 @@
                 'pasillo_norte': 'PASILLO NORTE',
                 'habitacion_principal': 'HABITACIÓN PRINCIPAL',
                 'comedor': 'COMEDOR',
-                'centro': '',
+                'centro': '', // Habitación del centro vacía (no asignable)
                 'habitacion_invitados': 'HABITACIÓN INVITADOS',
                 'torreon_oeste': 'TORREÓN OESTE',
                 'pasillo_sur': 'PASILLO SUR',
@@ -845,57 +855,7 @@
             console.log('📊 Información del juego actualizada');
         }
 
-        // Función para mostrar notificación de actualización
-        function showUpdateNotification() {
-            // Crear notificación temporal
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(145deg, #ff4444, #cc0000);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                z-index: 1000;
-                font-weight: bold;
-                animation: slideIn 0.3s ease-out;
-            `;
-            notification.textContent = '🔄 Juego actualizado';
-            
-            // Agregar estilos de animación
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(notification);
-            
-            // Remover notificación después de 3 segundos
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-            
-            // Agregar animación de salida
-            const slideOutStyle = document.createElement('style');
-            slideOutStyle.textContent = `
-                @keyframes slideOut {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(100%); opacity: 0; }
-                }
-            `;
-            document.head.appendChild(slideOutStyle);
-        }
+
 
         // Función para actualizar el estado de conexión
         function updateConnectionStatus(status, message) {
