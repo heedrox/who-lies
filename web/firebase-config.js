@@ -37,7 +37,9 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
       // Campos para el sistema de rondas
       endingRound: false,
-      roundNumber: 1
+      roundNumber: 1,
+      // Campo para el sistema de muertes
+      deads: []
     };
     
     // Agregar visibilidad si se proporciona
@@ -126,6 +128,51 @@ async function updatePlayerMovement(gameCode, playerNumber, nextMovement) {
   }
 }
 
+// Function to save kill selection for the ASESINO
+async function saveKillSelection(gameCode, victimNumber) {
+  try {
+    const updateData = {
+      nextDeath: victimNumber,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    await db.collection('games').doc(gameCode).update(updateData);
+    
+    if (victimNumber === null) {
+      console.log('✅ ASESINO confirmó no matar a nadie');
+    } else {
+      console.log(`✅ ASESINO confirmó matar al JUGADOR ${victimNumber}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error al guardar selección de víctima:', error);
+    throw error;
+  }
+}
+
+// Function to reset the deads array
+async function resetDeadsArray() {
+  try {
+    const params = window.gameParams;
+    if (!params) {
+      console.log('❌ No hay parámetros de juego disponibles para resetear muertos');
+      return;
+    }
+    
+    await db.collection('games').doc(params.gameCode).update({
+      deads: [],
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log('✅ Array de muertos reseteado exitosamente');
+    return true;
+  } catch (error) {
+    console.error('❌ Error al resetear array de muertos:', error);
+    throw error;
+  }
+}
+
 // Function to check if all players have moved
 async function checkAllPlayersMoved(gameCode, totalPlayers) {
   try {
@@ -152,6 +199,15 @@ async function checkAllPlayersMoved(gameCode, totalPlayers) {
 // Function to finalize round and recalculate visibility
 async function finalizeRound(gameCode, newDistribution, newVisibility) {
   try {
+    // Obtener el documento actual para verificar si hay una muerte pendiente
+    const currentDoc = await db.collection('games').doc(gameCode).get();
+    if (!currentDoc.exists) {
+      throw new Error('Juego no encontrado');
+    }
+    
+    const currentData = currentDoc.data();
+    const nextDeath = currentData.nextDeath;
+    
     // Preparar campos a limpiar
     const updateData = {
       playerDistribution: newDistribution,
@@ -161,9 +217,33 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
     };
     
     // Limpiar campos de movimiento de todos los jugadores
-    for (let i = 1; i <= 20; i++) { // Máximo 20 jugadores
+    for (let i = 1; i <= Object.values(newDistribution).flat().length; i++) {
       const fieldName = `player${i}NextMovement`;
       updateData[fieldName] = firebase.firestore.FieldValue.delete();
+    }
+    
+    // Procesar muerte si existe
+    if (nextDeath !== undefined && nextDeath !== null) {
+      // Obtener array de muertos actual o crear uno nuevo
+      const currentDeads = currentData.deads || [];
+      
+      if (nextDeath !== null) {
+        // Agregar la nueva víctima al array de muertos
+        if (!currentDeads.includes(nextDeath)) {
+          currentDeads.push(nextDeath);
+          console.log(`💀 JUGADOR ${nextDeath} agregado al array de muertos: [${currentDeads.join(', ')}]`);
+        }
+      }
+      
+      // Actualizar array de muertos
+      updateData.deads = currentDeads;
+      
+      // Limpiar campo nextDeath
+      updateData.nextDeath = firebase.firestore.FieldValue.delete();
+      
+      console.log(`✅ Muerte procesada. Array de muertos actualizado: [${currentDeads.join(', ')}]`);
+    } else {
+      console.log('ℹ️ No hay muerte pendiente en esta ronda');
     }
     
     await db.collection('games').doc(gameCode).update(updateData);

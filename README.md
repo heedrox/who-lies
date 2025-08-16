@@ -229,6 +229,7 @@ who-lies/
 - **Sistema de login/logout** con interfaz moderna y transiciones suaves
 - **Gestión de estado** de autenticación automática
 - **Sistema de roles automático** con asignación de ASESINO y COMPLICE
+- **Sistema de asesinatos del ASESINO** con interfaz de selección de víctima
 - **Sincronización en tiempo real** con Firebase para actualizaciones instantáneas
 - **Indicador de estado de conexión** visual para monitorear la conectividad
 - **Notificaciones automáticas** cuando hay cambios en el juego
@@ -351,6 +352,19 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Almacenamiento en Firebase**: Distribución + roles se guardan en Firestore
 - **Estructura de datos**: `{ playerDistribution: {...}, roles: { ASESINO: X, COMPLICE: [Y] } }`
 - **Sincronización**: Todos los jugadores pueden acceder a la información de roles
+- **Sistema de asesinatos**: El ASESINO puede matar a otros jugadores durante el modo de movimiento
+
+### 🔪 Sistema de Asesinatos del ASESINO
+- **Activación automática**: Solo se activa en el turno de MOVIMIENTO
+- **Selección de víctima**: Interfaz especial para que el ASESINO seleccione a quién matar
+- **Restricciones de víctimas**: Solo puede matar a jugadores en su misma habitación
+- **Opciones de acción**: Puede elegir matar a UNO y SOLO UNO, o decidir no matar a nadie
+- **Flujo obligatorio**: Debe seleccionar víctima ANTES de poder moverse
+- **Base de datos**: Campo `nextDeath: X` se actualiza al seleccionar víctima
+- **Procesamiento automático**: Al avanzar ronda, se actualiza el array `deads: []`
+- **Reset automático**: Array de muertos se vacía al reiniciar el juego
+- **Visualización de muertos**: Los jugadores muertos se muestran con emoji 💀 y estilo tachado
+- **Interfaz intuitiva**: Selección visual con opciones claras y confirmación obligatoria
 
 ### 🔄 Sincronización en Tiempo Real
 - **Suscripciones automáticas**: Los jugadores se suscriben automáticamente a cambios en Firebase
@@ -431,6 +445,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de roles automático** - Asignación automática de ASESINO y COMPLICE
 - [x] **Sincronización en tiempo real** - Suscripciones automáticas a Firebase para actualizaciones instantáneas
 - [x] **Sistema de rondas del juego** - Gestión completa de fases del juego con modo de movimiento
+- [x] **Sistema de asesinatos del ASESINO** - Interfaz de selección de víctima y gestión de muertes
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo

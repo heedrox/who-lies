@@ -634,6 +634,189 @@
             }
         }
 
+        .user-id {
+            font-family: monospace;
+            background: rgba(139,0,0,0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        /* Estilos para la interfaz de selección de víctima */
+        .kill-selection {
+            background: linear-gradient(135deg, #4a0000 0%, #8b0000 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-bottom: 3px solid #ff4444;
+            position: relative;
+            z-index: 10;
+        }
+
+        .kill-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: #ff6666;
+        }
+
+        .kill-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .kill-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .kill-option {
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .kill-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+            border-color: #ff4444;
+        }
+
+        .kill-option.selected {
+            background: linear-gradient(145deg, #8b0000, #a52a2a);
+            border-color: #ff4444;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+        }
+
+        .kill-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border-color: #444;
+        }
+
+        .kill-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .confirm-kill-btn {
+            background: linear-gradient(145deg, #8b0000, #a52a2a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .confirm-kill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,0,0,0.5);
+            background: linear-gradient(145deg, #a52a2a, #c04040);
+        }
+
+        .confirm-kill-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .no-kill-btn {
+            background: linear-gradient(145deg, #444444, #666666);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .no-kill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(145deg, #666666, #888888);
+        }
+
+        .no-kill-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Estilos para la información de muertos */
+        .deads-info {
+            background: linear-gradient(135deg, #2a0000 0%, #4a0000 100%);
+            color: #ff6666;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-bottom: 2px solid #ff4444;
+            position: relative;
+            z-index: 8;
+        }
+
+        .deads-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: #ff8888;
+        }
+
+        .deads-list {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .logout-btn {
+            background: linear-gradient(145deg, #666666, #444444);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(145deg, #888888, #666666);
+        }
+
+        .logout-btn:active {
+            transform: translateY(0);
+        }
 
     </style>
 </head>
@@ -644,6 +827,19 @@
         <button id="reload-page-btn" class="reload-page-btn" onclick="window.location.reload()" title="Recargar página">🔄</button>
         <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR</button>
     </header>
+
+    <!-- Interfaz de selección de víctima para el ASESINO -->
+    <div id="kill-selection" class="kill-selection" style="display: none;">
+        <div class="kill-title">🔪 MATAR A:</div>
+        <div class="kill-subtitle">Selecciona a tu víctima (o nadie)</div>
+        <div id="kill-options" class="kill-options">
+            <!-- Se llenará dinámicamente -->
+        </div>
+        <div class="kill-actions">
+            <button id="confirm-kill-btn" class="confirm-kill-btn" onclick="confirmKill()">CONFIRMAR ASESINATO</button>
+            <button id="no-kill-btn" class="no-kill-btn" onclick="selectNoKill()">NO MATAR A NADIE</button>
+        </div>
+    </div>
 
     <main class="main-content">
         <!-- Login Section -->
@@ -1174,6 +1370,161 @@
             
             // Habilitar selección de habitaciones para movimiento
             enableRoomSelection(gameData);
+            
+            // Mostrar interfaz de selección de víctima para el ASESINO
+            showKillSelection(gameData);
+        }
+        
+        // Función para mostrar la interfaz de selección de víctima
+        function showKillSelection(gameData) {
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const playerRole = gameData.roles ? determinePlayerRole(currentPlayer, gameData.roles) : 'INVITADO/A';
+            
+            // Solo mostrar para el ASESINO
+            if (playerRole !== 'ASESINO/A') {
+                console.log('🚫 Solo el ASESINO puede seleccionar víctimas');
+                return;
+            }
+            
+            console.log('🔪 Mostrando interfaz de selección de víctima para el ASESINO');
+            
+            const killSelection = document.getElementById('kill-selection');
+            if (!killSelection) return;
+            
+            // Mostrar la interfaz
+            killSelection.style.display = 'block';
+            
+            // Generar opciones de víctimas disponibles
+            generateKillOptions(gameData);
+        }
+        
+        // Función para generar las opciones de víctimas disponibles
+        function generateKillOptions(gameData) {
+            const killOptions = document.getElementById('kill-options');
+            if (!killOptions) return;
+            
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const currentRoom = getCurrentPlayerRoom(currentPlayer, gameData.playerDistribution);
+            
+            if (!currentRoom) {
+                console.log('❌ No se pudo determinar la habitación actual del ASESINO');
+                return;
+            }
+            
+            // Obtener jugadores en la misma habitación (excluyendo al ASESINO)
+            const playersInRoom = gameData.playerDistribution[currentRoom] || [];
+            const availableVictims = playersInRoom.filter(playerNum => playerNum !== currentPlayer);
+            
+            console.log(`🔪 ASESINO en ${currentRoom}: jugadores disponibles para matar: [${availableVictims.map(p => `J${p}`).join(', ')}]`);
+            
+            // Limpiar opciones anteriores
+            killOptions.innerHTML = '';
+            
+            // Agregar opción "NADIE"
+            const noKillOption = document.createElement('div');
+            noKillOption.className = 'kill-option';
+            noKillOption.textContent = 'NADIE';
+            noKillOption.onclick = () => selectKillOption(null, noKillOption);
+            killOptions.appendChild(noKillOption);
+            
+            // Agregar opciones para cada jugador disponible
+            availableVictims.forEach(playerNum => {
+                const killOption = document.createElement('div');
+                killOption.className = 'kill-option';
+                killOption.textContent = `JUG. ${playerNum}`;
+                killOption.onclick = () => selectKillOption(playerNum, killOption);
+                killOptions.appendChild(killOption);
+            });
+            
+            // Deshabilitar botón de confirmar hasta que se seleccione una opción
+            const confirmBtn = document.getElementById('confirm-kill-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+            }
+            
+            // Resetear selección
+            window.selectedVictim = null;
+        }
+        
+        // Función para seleccionar una opción de víctima
+        function selectKillOption(victimNumber, optionElement) {
+            // Remover selección anterior
+            document.querySelectorAll('.kill-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Seleccionar nueva opción
+            if (optionElement) {
+                optionElement.classList.add('selected');
+            }
+            
+            // Guardar selección
+            window.selectedVictim = victimNumber;
+            
+            // Habilitar botón de confirmar
+            const confirmBtn = document.getElementById('confirm-kill-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
+            
+            if (victimNumber === null) {
+                console.log('🔪 ASESINO decidió no matar a nadie');
+            } else {
+                console.log(`🔪 ASESINO seleccionó como víctima al JUGADOR ${victimNumber}`);
+            }
+        }
+        
+        // Función para confirmar el asesinato
+        async function confirmKill() {
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const victimNumber = window.selectedVictim;
+            
+            if (victimNumber === undefined) {
+                alert('Por favor, selecciona una opción antes de confirmar.');
+                return;
+            }
+            
+            try {
+                // Guardar la selección en Firebase
+                await saveKillSelection(window.gameParams.gameCode, victimNumber);
+                
+                if (victimNumber === null) {
+                    console.log('✅ ASESINO confirmó no matar a nadie');
+                    alert('Has confirmado no matar a nadie en esta ronda.');
+                } else {
+                    console.log(`✅ ASESINO confirmó matar al JUGADOR ${victimNumber}`);
+                    alert(`Has confirmado matar al JUGADOR ${victimNumber} en esta ronda.`);
+                }
+                
+                // Ocultar interfaz de selección de víctima
+                hideKillSelection();
+                
+            } catch (error) {
+                console.error('❌ Error al confirmar asesinato:', error);
+                alert('Error al confirmar el asesinato. Por favor, intenta de nuevo.');
+            }
+        }
+        
+        // Función para seleccionar "no matar a nadie"
+        async function selectNoKill() {
+            window.selectedVictim = null;
+            await confirmKill();
+        }
+        
+        // Función para ocultar la interfaz de selección de víctima
+        function hideKillSelection() {
+            const killSelection = document.getElementById('kill-selection');
+            if (killSelection) {
+                killSelection.style.display = 'none';
+            }
+            
+            // También ocultar información de muertos si no hay muertos
+            if (!window.gameData || !window.gameData.deads || window.gameData.deads.length === 0) {
+                const deadsInfo = document.getElementById('deads-info');
+                if (deadsInfo) {
+                    deadsInfo.style.display = 'none';
+                }
+            }
         }
         
         // Función para deshabilitar el modo de movimiento
@@ -1201,6 +1552,15 @@
             
             // Deshabilitar selección de habitaciones
             disableRoomSelection();
+            
+            // Ocultar interfaz de selección de víctima
+            hideKillSelection();
+            
+            // Ocultar información de muertos
+            const deadsInfo = document.getElementById('deads-info');
+            if (deadsInfo) {
+                deadsInfo.style.display = 'none';
+            }
         }
         
         // Función para mostrar indicador de modo de movimiento
@@ -1317,12 +1677,19 @@
                 const endRoundBtn = document.querySelector('.end-round-btn');
                 
                 if (allMoved && endRoundBtn && window.gameParams.playerNumber === 1) {
-                    // Habilitar botón "SIGUIENTE RONDA"
-                    endRoundBtn.disabled = false;
-                    endRoundBtn.classList.remove('disabled');
-                    endRoundBtn.classList.add('ready-to-advance');
+                    // Verificar si el ASESINO ya seleccionó una víctima
+                    const asesinoHasSelected = gameData.nextDeath !== undefined;
                     
-                    console.log('🎯 Todos los jugadores han movido, botón habilitado');
+                    if (asesinoHasSelected) {
+                        // Habilitar botón "SIGUIENTE RONDA"
+                        endRoundBtn.disabled = false;
+                        endRoundBtn.classList.remove('disabled');
+                        endRoundBtn.classList.add('ready-to-advance');
+                        
+                        console.log('🎯 Todos los jugadores han movido y el ASESINO seleccionó víctima, botón habilitado');
+                    } else {
+                        console.log('⏳ Esperando a que el ASESINO seleccione una víctima...');
+                    }
                 }
             } catch (error) {
                 console.error('❌ Error al verificar movimientos:', error);
@@ -1334,6 +1701,15 @@
             const rooms = document.querySelectorAll('.room');
             const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
             const playerRole = gameData.roles ? determinePlayerRole(currentPlayer, gameData.roles) : 'INVITADO/A';
+            
+            // Para el ASESINO, verificar si ya seleccionó una víctima
+            if (playerRole === 'ASESINO/A') {
+                const hasSelectedVictim = gameData.nextDeath !== undefined;
+                if (!hasSelectedVictim) {
+                    console.log('🔪 ASESINO debe seleccionar una víctima antes de moverse');
+                    return; // No habilitar movimiento hasta que seleccione víctima
+                }
+            }
             
             rooms.forEach((room, index) => {
                 const roomNames = [
@@ -1585,7 +1961,15 @@
                             if (playerNum === currentPlayer) {
                                 playerSpan.classList.add('current-player');
                             }
-                            playerSpan.textContent = `J${playerNum}`;
+                            // Marcar jugadores muertos
+                            if (window.gameData && window.gameData.deads && window.gameData.deads.includes(playerNum)) {
+                                playerSpan.style.opacity = '0.5';
+                                playerSpan.style.textDecoration = 'line-through';
+                                playerSpan.style.background = 'rgba(139,0,0,0.7)';
+                                playerSpan.textContent = `💀${playerNum}`;
+                            } else {
+                                playerSpan.textContent = `J${playerNum}`;
+                            }
                             playersList.appendChild(playerSpan);
                         });
                         
@@ -1601,6 +1985,34 @@
                 setTimeout(() => {
                     room.classList.remove('updated');
                 }, 500);
+            }
+            
+            // Mostrar información de muertos si existe
+            showDeadsInfo();
+        }
+        
+        // Función para mostrar información de muertos
+        function showDeadsInfo() {
+            if (!window.gameData || !window.gameData.deads) return;
+            
+            const deads = window.gameData.deads;
+            if (deads.length === 0) return;
+            
+            console.log(`💀 Jugadores muertos: [${deads.map(p => `J${p}`).join(', ')}]`);
+            
+            // Mostrar notificación visual de muertos
+            const deadsInfo = document.createElement('div');
+            deadsInfo.id = 'deads-info';
+            deadsInfo.className = 'deads-info';
+            deadsInfo.innerHTML = `
+                <div class="deads-title">💀 JUGADORES MUERTOS</div>
+                <div class="deads-list">${deads.map(p => `JUG. ${p}`).join(', ')}</div>
+            `;
+            
+            // Insertar después del header si no existe
+            if (!document.getElementById('deads-info')) {
+                const header = document.querySelector('.header');
+                header.parentNode.insertBefore(deadsInfo, header.nextSibling);
             }
         }
 
@@ -1799,6 +2211,9 @@
 
                 // Ejecutar toda la lógica de inicialización del juego
                 await generateAndSaveDistribution();
+                
+                // Resetear array de muertos en Firebase
+                await resetDeadsArray();
                 
                 console.log('🔄 Juego reiniciado exitosamente.');
                 
