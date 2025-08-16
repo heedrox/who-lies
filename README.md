@@ -62,7 +62,7 @@ Cada jugador recibe información como:
   - **Torreón Este**: Ve a Pasillo Sur y Habitación Invitados
 - **Ventaja para roles especiales**: ASESINO y COMPLICE pueden ver a todos los jugadores en todas las habitaciones
 - **Sistema de visibilidad centralizado**: Se genera un diccionario `{ 1: [3,4], 2: [1,5], ... }` al crear la distribución
-- **Probabilidad del 50% para INVITADOS**: Se aplica una sola vez, no en cada actualización de la UI
+- **Probabilidad del 60% para INVITADOS**: Se aplica una sola vez, no en cada actualización de la UI
 - **Almacenamiento en Firebase**: La visibilidad se guarda junto con la distribución y roles para consistencia
 - **Sin recálculo**: Cada jugador mantiene la misma visibilidad durante toda la partida
 
@@ -238,7 +238,7 @@ who-lies/
 - **Sistema de visibilidad entre habitaciones** - Los jugadores solo ven a otros jugadores en habitaciones contiguas
 - **Ventaja táctica para roles especiales** - ASESINO y COMPLICE pueden ver a todos los jugadores en todas las habitaciones
 - **Sistema de visibilidad centralizado** - Diccionario de visibilidad generado una sola vez y almacenado en Firebase
-- **Probabilidad del 50% para INVITADOS** - Se aplica una sola vez al generar la distribución, garantizando consistencia
+- **Probabilidad del 60% para INVITADOS** - Se aplica una sola vez al generar la distribución, garantizando consistencia
 - **Sistema de rondas completo** - Control de fases del juego con modo de movimiento
 - **Interfaz de movimiento inteligente** - Selección de habitaciones con restricciones por rol
 - **Seguimiento de movimientos en tiempo real** - Lista visual del estado de cada jugador
@@ -375,7 +375,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Habitaciones ocultas**: Las habitaciones no visibles se muestran como vacías (sin spoilers)
 - **Diccionario de visibilidad**: Sistema configurable que define qué habitaciones puede ver cada estancia
 - **Sistema centralizado**: La visibilidad se genera una sola vez al crear la distribución y se almacena en Firebase
-- **Probabilidad del 50%**: Para INVITADOS, se aplica una sola vez al generar la distribución, no en cada actualización
+- **Probabilidad del 60%**: Para INVITADOS, se aplica una sola vez al generar la distribución, no en cada actualización
 - **Consistencia garantizada**: La visibilidad de cada jugador se mantiene constante durante toda la partida
 
 ### 🎯 Sistema de Rondas y Movimiento

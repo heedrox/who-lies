@@ -776,11 +776,11 @@
                     }
                 }
                 
-                // Para INVITADOS, aplicar 50% de probabilidad UNA SOLA VEZ
+                // Para INVITADOS, aplicar 60% de probabilidad UNA SOLA VEZ
                 if (playerRole === 'INVITADO/A') {
                     const finalVisiblePlayers = [];
                     visiblePlayers.forEach(playerNum => {
-                        if (Math.random() < 0.5) {
+                        if (Math.random() < 0.6) {
                             finalVisiblePlayers.push(playerNum);
                         }
                     });
@@ -798,7 +798,7 @@
             return visibility;
         }
 
-        // Función para aplicar probabilidad del 50% a la visibilidad de un jugador
+        // Función para aplicar probabilidad del 60% a la visibilidad de un jugador
         function applyVisibilityProbability(playerNumber, playerVisibility, roles) {
             if (!playerVisibility || !playerVisibility[playerNumber]) {
                 return [];
@@ -1530,7 +1530,7 @@
                         // Usar el diccionario de visibilidad centralizado
                         const baseVisiblePlayers = window.gameData.playerVisibility[currentPlayer] || [];
                         
-                        // Aplicar probabilidad del 50% para determinar qué jugadores ve realmente
+                        // Aplicar probabilidad del 60% para determinar qué jugadores ve realmente
                         const finalVisiblePlayers = applyVisibilityProbability(currentPlayer, window.gameData.playerVisibility, window.gameData.roles);
                         
                         // Solo mostrar jugadores si están en esta habitación Y están en la lista de visibles final
