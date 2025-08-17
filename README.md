@@ -101,6 +101,15 @@ Cada jugador recibe información como:
 - **Integración con Firebase**: Los jugadores muertos se sincronizan en tiempo real
 - **Prevención de auto-acusación**: El jugador 1 puede acusar a cualquier jugador, incluyendo J1
 
+### 🎮 Sistema de configuración de partida optimizado
+- **Acceso directo con código de juego**: URLs del formato `?/g/{CODIGO_JUEGO}` para iniciar partidas
+- **Selección de número de jugadores**: Pantalla para elegir entre 4 y 15 jugadores
+- **Flujo secuencial de configuración**: Sistema de pantallas paso a paso para configurar la partida
+- **Redirección automática**: Navegación fluida entre pantallas de configuración
+- **Integración con autenticación**: Flujo de login antes de la configuración de la partida
+- **Interfaz consistente**: Diseño uniforme con el resto del juego
+- **Validación de parámetros**: Solo acepta números de jugadores válidos (4-15)
+
 ## 💻 Contexto de desarrollo
 
 ### 🚀 Origen del proyecto
@@ -261,6 +270,7 @@ who-lies/
 - **Finalización automática de rondas** - Sistema que detecta cuando todos han movido
 - **Botón de recarga rápida** - Botón circular con emoji 🔄 para recargar la página desde la esquina superior izquierda
 - **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
+- **Sistema de configuración de partida optimizado** - Acceso directo con código de juego y selección secuencial de número de jugadores (4-15)
 
 ## 🔧 Configuración del entorno
 
@@ -305,16 +315,34 @@ Una vez iniciado el servidor:
 
 ### Sistema de parámetros de jugadores
 El juego utiliza parámetros de URL para identificar jugadores:
+
+#### Formato nuevo (recomendado)
+- **Formato**: `http://127.0.0.1:3000/?/g/{CODIGO_JUEGO}/p/{NUM_JUGADOR}/{TOTAL_JUGADORES}`
+- **Ejemplos**:
+  - `http://127.0.0.1:3000/?/g/ABC123/p/1/6` - Jugador 1 de 6 en partida ABC123
+  - `http://127.0.0.1:3000/?/g/ABC123/p/3/8` - Jugador 3 de 8 en partida ABC123
+  - `http://127.0.0.1:3000/?/g/ABC123/p/x/6` - Selección de jugador para partida ABC123 con 6 jugadores
+
+#### Formato de acceso directo
+- **Formato**: `http://127.0.0.1:3000/?/g/{CODIGO_JUEGO}`
+- **Ejemplo**: `http://127.0.0.1:3000/?/g/ABC123` - Acceso directo a partida ABC123 (selección automática de número de jugadores)
+
+#### Formato anterior (legacy)
 - **Formato**: `http://127.0.0.1:3000/?X/Y`
 - **X**: Número de jugador (1, 2, 3, ...)
 - **Y**: Total de jugadores en la partida
-
-**Ejemplos:**
-- `http://127.0.0.1:3000/?1/6` - Jugador 1 de 6
-- `http://127.0.0.1:3000/?3/8` - Jugador 3 de 8
-- `http://127.0.0.1:3000/?2/4` - Jugador 2 de 4
+- **Ejemplos**:
+  - `http://127.0.0.1:3000/?1/6` - Jugador 1 de 6
+  - `http://127.0.0.1:3000/?3/8` - Jugador 3 de 8
+  - `http://127.0.0.1:3000/?2/4` - Jugador 2 de 4
 
 ## 🎯 Cómo jugar
+
+### 0. **Configurar la partida (nuevo)**
+- **Acceso directo**: Usa `?/g/{CODIGO_JUEGO}` para acceder directamente a una partida
+- **Selección de jugadores**: Elige el número de jugadores (4-15) para la partida
+- **Selección de jugador**: Elige tu número de jugador específico
+- **Autenticación**: El sistema te pedirá autenticación antes de la configuración
 
 ### 1. **Entender tu posición**
 - Lee tu ubicación actual en la información del juego
@@ -491,6 +519,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Información de roles para ASESINO y COMPLICE** - Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
 - [x] **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
 - [x] **Fix de distribución de víctimas** - Los jugadores marcados para morir no se mueven antes de ser procesados como muertos
+- [x] **Sistema de configuración de partida optimizado** - Acceso directo con código de juego y selección secuencial de número de jugadores (4-15)
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
