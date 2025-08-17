@@ -5,11 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WHO LIES - Murder Mystery Game</title>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <!-- Firebase SDK 12.x Modular -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, onSnapshot, doc, setDoc, updateDoc, getDoc, collection, addDoc, orderBy, query, serverTimestamp, deleteField } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBS9NW_JTE5SyajdqsGF8qeCH7ROSAWFYo",
+            authDomain: "the-anomaly-897ce.firebaseapp.com",
+            databaseURL: "https://the-anomaly-897ce.firebaseio.com",
+            projectId: "the-anomaly-897ce",
+            storageBucket: "the-anomaly-897ce.firebasestorage.app",
+            messagingSenderId: "136548028625",
+            appId: "1:136548028625:web:437d1081024d3907edf5f0",
+            measurementId: "G-8SJHHK4Y6G"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Initialize Firestore with persistent cache and multi-tab support
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({ 
+                tabManager: persistentMultipleTabManager() 
+            })
+        });
+        
+        // Initialize Auth
+        const auth = getAuth(app);
+        
+        // Make Firebase services available globally
+        window.firebaseServices = {
+            app,
+            db,
+            auth,
+            onSnapshot,
+            doc,
+            setDoc,
+            updateDoc,
+            getDoc,
+            collection,
+            addDoc,
+            orderBy,
+            query,
+            serverTimestamp,
+            deleteField,
+            onAuthStateChanged,
+            signInAnonymously,
+            signOut
+        };
+        
+        // Make auth available globally for the observer
+        window.auth = auth;
+        
+        console.log('✅ Firebase 12.x inicializado con caché persistente y soporte multi-tab');
+    </script>
     
     <style>
         * {
@@ -1158,7 +1210,7 @@
         </footer>
 
     <!-- Firebase Configuration -->
-    <script src="firebase-config.js"></script>
+
     
     <script>
         // Función para obtener parámetros de la URL
@@ -1534,7 +1586,7 @@
                 console.log(playerVisibility);
                 
                 // Guardar en Firebase (distribución + roles + visibilidad)
-                await savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution, playerRoles, playerVisibility);
+                await window.FirebaseModular.savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution, playerRoles, playerVisibility);
                 
                 console.log('✅ Distribución y roles guardados exitosamente en Firebase');
                 
@@ -1549,7 +1601,7 @@
                 });
                 
                 // Suscribirse a actualizaciones en tiempo real
-                subscribeToGameUpdates(params.gameCode, handleGameUpdate);
+                window.FirebaseModular.subscribeToGameUpdates(params.gameCode, handleGameUpdate);
                 
             } catch (error) {
                 console.error('❌ Error al generar/guardar distribución:', error);
@@ -1643,7 +1695,7 @@
             
             try {
                 console.log('🔍 Buscando distribución existente...');
-                const gameData = await getPlayerDistribution(params.gameCode);
+                const gameData = await window.FirebaseModular.getPlayerDistribution(params.gameCode);
                 
                 if (gameData) {
                     console.log('📋 Distribución recuperada:');
@@ -1664,7 +1716,7 @@
                 }
                 
                 // Suscribirse a actualizaciones en tiempo real
-                subscribeToGameUpdates(params.gameCode, handleGameUpdate);
+                window.FirebaseModular.subscribeToGameUpdates(params.gameCode, handleGameUpdate);
                 
             } catch (error) {
                 console.error('❌ Error al recuperar distribución:', error);
@@ -2075,7 +2127,7 @@
         async function selectKillAndMove(victimNumber, targetRoom, killModal) {
             try {
                 // Guardar la selección de víctima en Firebase
-                await saveKillSelection(window.gameParams.gameCode, victimNumber);
+                await window.FirebaseModular.saveKillSelection(window.gameParams.gameCode, victimNumber);
                 
                 if (victimNumber === null) {
                     console.log('✅ ASESINO confirmó no matar a nadie');
@@ -2090,11 +2142,11 @@
                 const roomDisplayName = getRoomDisplayName(targetRoom);
                 console.log(`🎯 ASESINO se mueve automáticamente a ${roomDisplayName}`);
                 
-                await updatePlayerMovement(window.gameParams.gameCode, window.gameParams.playerNumber, targetRoom);
+                await window.FirebaseModular.updatePlayerMovement(window.gameParams.gameCode, window.gameParams.playerNumber, targetRoom);
                 console.log(`✅ Movimiento confirmado a ${roomDisplayName}`);
                 
                 // Verificar si todos los jugadores han movido
-                const allMoved = await checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
+                const allMoved = await window.FirebaseModular.checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
                 if (allMoved && window.gameParams.playerNumber === 1) {
                     console.log('🎯 Todos los jugadores han movido, finalizando ronda...');
                     await finalizeRoundAndRecalculate();
@@ -2247,7 +2299,7 @@
         // Función para verificar si todos han movido y actualizar el botón
         async function checkAllPlayersMovedAndUpdateButton(gameData) {
             try {
-                const allMoved = await checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
+                const allMoved = await window.FirebaseModular.checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
                 const endRoundBtn = document.querySelector('.end-round-btn');
                 
                 if (allMoved && endRoundBtn && window.gameParams.playerNumber === 1) {
@@ -2386,11 +2438,11 @@
             if (!confirmMove) return;
             
             try {
-                await updatePlayerMovement(window.gameParams.gameCode, currentPlayer, roomName);
+                await window.FirebaseModular.updatePlayerMovement(window.gameParams.gameCode, currentPlayer, roomName);
                 console.log(`✅ Movimiento confirmado a ${roomDisplayName}`);
                 
                 // Verificar si todos los jugadores han movido
-                const allMoved = await checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
+                const allMoved = await window.FirebaseModular.checkAllPlayersMoved(window.gameParams.gameCode, window.gameParams.totalPlayers);
                 if (allMoved && window.gameParams.playerNumber === 1) {
                     console.log('🎯 Todos los jugadores han movido, finalizando ronda...');
                     await finalizeRoundAndRecalculate();
@@ -2413,7 +2465,7 @@
                 const newVisibility = generatePlayerVisibility(newDistribution, window.gameData.roles);
                 
                 // Finalizar la ronda
-                await finalizeRound(window.gameParams.gameCode, newDistribution, newVisibility);
+                await window.FirebaseModular.finalizeRound(window.gameParams.gameCode, newDistribution, newVisibility);
                 
                 console.log('✅ Ronda finalizada exitosamente');
             } catch (error) {
@@ -2425,10 +2477,12 @@
         // Función para calcular nueva distribución basada en movimientos
         async function calculateNewDistribution() {
             try {
-                const doc = await db.collection('games').doc(window.gameParams.gameCode).get();
-                if (!doc.exists) throw new Error('Juego no encontrado');
+                const { db } = window.FirebaseModular.getFirebaseServices();
+                const { doc, getDoc } = window.firebaseServices;
+                const docSnap = await getDoc(doc(db, 'games', window.gameParams.gameCode));
+                if (!docSnap.exists()) throw new Error('Juego no encontrado');
                 
-                const gameData = doc.data();
+                const gameData = docSnap.data();
                 const oldDistribution = gameData.playerDistribution;
                 const newDistribution = {};
                 
@@ -2772,19 +2826,30 @@
 
         // Función para manejar cambios en el estado de conexión de Firestore
         function setupFirestoreConnectionListener() {
-            // Escuchar cambios en la conexión de Firestore
-            db.enableNetwork().then(() => {
-                console.log('🌐 Red habilitada para Firestore');
-            });
-            
-            // Verificar estado de conexión periódicamente
-            setInterval(() => {
+            try {
+                // Obtener servicios de Firebase desde Firebase Modular
+                const { db } = window.FirebaseModular.getFirebaseServices();
+                
+                // Escuchar cambios en la conexión de Firestore
                 db.enableNetwork().then(() => {
-                    updateConnectionStatus('connected', '🟢 Conectado a Firebase');
-                }).catch(() => {
-                    updateConnectionStatus('disconnected', '🔴 Desconectado de Firebase');
+                    console.log('🌐 Red habilitada para Firestore');
                 });
-            }, 10000); // Verificar cada 10 segundos
+                
+                // Verificar estado de conexión periódicamente
+                setInterval(() => {
+                    db.enableNetwork().then(() => {
+                        updateConnectionStatus('connected', '🟢 Conectado a Firebase');
+                    }).catch(() => {
+                        updateConnectionStatus('disconnected', '🔴 Desconectado de Firebase');
+                    });
+                }, 10000); // Verificar cada 10 segundos
+                
+                console.log('✅ Listener de conexión de Firestore configurado');
+            } catch (error) {
+                console.error('❌ Error al configurar listener de conexión de Firestore:', error);
+                // Fallback: solo mostrar estado conectado
+                updateConnectionStatus('connected', '🟢 Conectado a Firebase');
+            }
         }
 
         async function endRound() {
@@ -2799,7 +2864,7 @@
             if (buttonText === 'TERMINAR RONDA') {
                 // Activar modo de movimiento
                 try {
-                    await startRoundEnding(window.gameParams.gameCode);
+                    await window.FirebaseModular.startRoundEnding(window.gameParams.gameCode);
                     console.log('🎯 Modo de movimiento activado');
                 } catch (error) {
                     console.error('❌ Error al terminar la ronda:', error);
@@ -2834,7 +2899,7 @@
                 await generateAndSaveDistribution();
                 
                 // Resetear array de muertos en Firebase
-                await resetDeadsArray();
+                await window.FirebaseModular.resetDeadsArray();
                 
                 console.log('🔄 Juego reiniciado exitosamente.');
                 
@@ -2889,10 +2954,10 @@
                 loginBtn.textContent = 'Conectando...';
                 loginBtn.classList.add('loading');
                 
-                await signInAnonymously();
+                await window.FirebaseModular.signInAnonymously();
                 
                 // Update user ID display
-                const user = getCurrentUser();
+                const user = window.FirebaseModular.getCurrentUser();
                 if (user) {
                     document.getElementById('user-id').textContent = user.uid;
                 }
@@ -2930,7 +2995,7 @@
 
         async function handleLogout() {
             try {
-                await signOut();
+                await window.FirebaseModular.signOut();
                 
                 // Reset user display
                 document.getElementById('user-id').textContent = 'Conectando...';
@@ -2945,8 +3010,10 @@
         }
 
         // Update auth state observer to also handle footer visibility
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
+        // Este observer se configurará DESPUÉS de que Firebase esté inicializado
+        // Se mueve a la función de inicialización del juego
+        /*
+        if (user) {
                 console.log('Usuario autenticado:', user.uid);
                 
                 // Verificar si necesitamos mostrar la pantalla de selección del número de jugadores
@@ -3038,7 +3105,8 @@
                 // Actualizar estado de conexión como desconectado
                 updateConnectionStatus('disconnected', '🔴 No autenticado');
             }
-        });
+        }
+        */
 
         // Sistema de acusaciones
         let currentAccusationTarget = null;
@@ -3148,7 +3216,10 @@
                 }
 
                 // Obtener el array actual de muertos
-                const gameDoc = await db.collection('games').doc(window.gameParams.gameCode).get();
+                const { db } = window.FirebaseModular.getFirebaseServices();
+                const { doc, getDoc, updateDoc } = window.firebaseServices;
+                
+                const gameDoc = await getDoc(doc(db, 'games', window.gameParams.gameCode));
                 if (!gameDoc.exists) {
                     console.error('❌ No se encontró el documento del juego');
                     return;
@@ -3160,7 +3231,7 @@
                 if (!currentDeads.includes(playerNumber)) {
                     const updatedDeads = [...currentDeads, playerNumber];
                     
-                    await db.collection('games').doc(window.gameParams.gameCode).update({
+                    await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
                         deads: updatedDeads
                     });
                     
@@ -3215,5 +3286,8 @@
 
 
     </script>
+    
+    <!-- Firebase Modular Configuration - Cargado al final para asegurar que Firebase esté disponible -->
+    <script src="firebase-modular.js"></script>
 </body>
 </html>

@@ -220,21 +220,23 @@ La nueva funcionalidad se ejecuta automáticamente cuando:
 - **Gestión de paquetes**: npm
 - **Entorno**: Node.js 20
 - **Lógica de juego**: Algoritmos de distribución aleatoria y validación de reglas
-- **Backend**: Firebase (Authentication, Firestore)
+- **Backend**: Firebase 12.1.0 (Authentication, Firestore) - **ACTUALIZADO**
 - **Autenticación**: Sistema de login anónimo con gestión de sesiones
+- **Arquitectura Firebase**: Patrón modular con singleton, caché persistente y soporte multi-tab
 
 ## 📁 Estructura del proyecto
 
 ```
 who-lies/
 ├── web/
-│   ├── index.html           # Interfaz principal del juego
-│   └── firebase-config.js   # Configuración de Firebase
-├── package.json              # Dependencias y scripts
-├── firebase.json             # Configuración de Firebase
-├── FIREBASE_SETUP.md         # Guía de configuración de Firebase
-├── README.md                 # Este archivo
-└── node_modules/             # Dependencias (generado automáticamente)
+│   ├── index.html                    # Interfaz principal del juego
+│   ├── firebase-modular.js           # Sistema Firebase modular (NUEVO)
+│   └── firebase-config.js            # Configuración de Firebase (DEPRECADO)
+├── package.json                       # Dependencias y scripts
+├── firebase.json                      # Configuración de Firebase
+├── FIREBASE_SETUP.md                  # Guía de configuración de Firebase
+├── README.md                          # Este archivo
+└── node_modules/                      # Dependencias (generado automáticamente)
 ```
 
 ## 🎮 Características del juego
@@ -303,6 +305,38 @@ npm install
 El servidor automáticamente buscará un puerto disponible, pero puedes especificar uno:
 ```bash
 npx live-server web --port=3001
+```
+
+### 🔥 **Problemas de Firebase (RESUELTOS)**
+
+#### ❌ **Error: "FIRESTORE INTERNAL ASSERTION FAILED: Unexpected state"**
+- **Causa**: Firebase 10.7.1 con compat mode y problemas de reconexión
+- **Solución**: ✅ **IMPLEMENTADA** - Migración completa a Firebase 12.1.0 modular
+- **Estado**: Resuelto completamente
+
+#### ❌ **Error: "auth is not defined"**
+- **Causa**: Observer de autenticación ejecutándose antes de que Firebase esté disponible
+- **Solución**: ✅ **IMPLEMENTADA** - Sistema de inicialización robusto con timing correcto
+- **Estado**: Resuelto completamente
+
+#### ❌ **Error: "db is not defined"**
+- **Causa**: Referencias directas a `db` sin obtenerla de Firebase Modular
+- **Solución**: ✅ **IMPLEMENTADA** - Todas las funciones ahora usan `window.FirebaseModular.getFirebaseServices()`
+- **Estado**: Resuelto completamente
+
+#### ❌ **Problema: Usuario autenticado pero juego no se muestra**
+- **Causa**: Conflictos entre observers de autenticación
+- **Solución**: ✅ **IMPLEMENTADA** - Sistema unificado de observers con lógica del juego integrada
+- **Estado**: Resuelto completamente
+
+### 🎯 **Verificación de Funcionamiento**
+Para verificar que Firebase funciona correctamente, busca estos logs en la consola:
+```javascript
+✅ Firebase 12.x inicializado con caché persistente y soporte multi-tab
+📦 Firebase Modular configurado y listo para usar
+🚀 Sistema Firebase completamente inicializado
+🎮 Usuario autenticado en el juego: [UID]
+✅ Listener de conexión de Firestore configurado
 ```
 
 ## 📱 Acceso al juego
@@ -500,6 +534,18 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Información de roles para ASESINO y COMPLICE**: Los jugadores con roles especiales pueden ver información adicional sobre otros roles en su perfil
 - **Fix de distribución de víctimas**: La función `calculateNewDistribution` ahora ignora los movimientos de jugadores marcados en `nextDeath` para evitar inconsistencias en la ubicación antes de procesar la muerte
 
+### 🚀 **Migración a Firebase 12.x Modular (NUEVO)**
+- **Actualización completa**: Migración de Firebase 10.7.1 (compat) a Firebase 12.1.0 (modular)
+- **Patrón Singleton**: Una sola instancia de Firebase por sesión, evitando re-inicialización
+- **Caché persistente**: `persistentLocalCache` con `persistentMultipleTabManager` para soporte multi-tab
+- **Arquitectura "a prueba de bombas"**: Implementación del patrón recomendado por GPT5 para evitar errores de reconexión
+- **Sistema de inicialización robusto**: Verificación automática de disponibilidad de servicios con timeout de seguridad
+- **Observer de autenticación integrado**: Sistema unificado de manejo de estado de autenticación
+- **Manejo de errores mejorado**: Try-catch en todas las operaciones críticas con fallbacks robustos
+- **Limpieza automática de suscripciones**: Prevención de memory leaks y estados inconsistentes
+- **Compatibilidad con HMR**: Sistema resistente a hot-reload y cambios de ruta
+- **Logs de depuración avanzados**: Sistema completo de logging para diagnóstico de problemas
+
 ### 🛡️ Seguridad y Balance del Juego
 - **Protección contra trampas**: Roles de otros jugadores ocultos para el jugador 1
 - **Balance de información**: ASESINO y COMPLICE mantienen ventajas tácticas justificadas
@@ -520,6 +566,9 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
 - [x] **Fix de distribución de víctimas** - Los jugadores marcados para morir no se mueven antes de ser procesados como muertos
 - [x] **Sistema de configuración de partida optimizado** - Acceso directo con código de juego y selección secuencial de número de jugadores (4-15)
+- [x] **Migración a Firebase 12.x Modular** - Actualización completa del sistema Firebase con patrón modular y singleton
+- [x] **Sistema de caché persistente y multi-tab** - Soporte para múltiples pestañas con sincronización automática
+- [x] **Arquitectura Firebase "a prueba de bombas"** - Implementación del patrón recomendado por GPT5 para evitar errores de reconexión
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
