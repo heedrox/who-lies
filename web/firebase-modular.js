@@ -679,27 +679,26 @@ function setupGameAuthObserver() {
             } else {
                 console.log('🎮 Usuario no autenticado en el juego');
                 
-                // Verificar si necesitamos mostrar la pantalla de selección del número de jugadores
-                if (window.gameParams && window.gameParams.needsPlayerCountSelection) {
-                    console.log('🎮 Mostrando pantalla de selección del número de jugadores sin autenticación');
-                    if (typeof showPlayerCountSelectionScreen === 'function') {
-                        showPlayerCountSelectionScreen(window.gameParams);
-                    }
-                    return; // No mostrar login si necesitamos selección del número de jugadores
-                }
+                // NO mostrar pantallas de selección sin autenticación
+                // Solo mostrar la pantalla de login y esperar a que el usuario se autentique
+                console.log('🎮 Usuario no autenticado, mostrando solo pantalla de login');
                 
-                // Verificar si necesitamos mostrar la pantalla de selección de jugador
-                if (window.gameParams && window.gameParams.needsPlayerSelection) {
-                    console.log('🎮 Mostrando pantalla de selección de jugador sin autenticación');
-                    if (typeof showPlayerSelectionScreen === 'function') {
-                        showPlayerSelectionScreen(window.gameParams);
-                    }
-                    return; // No mostrar login si necesitamos selección de jugador
-                }
+                // Asegurar que se muestre la pantalla de login
+                const loginSection = document.getElementById('login-section');
+                if (loginSection) loginSection.style.display = 'flex';
+                
+                // Ocultar otras pantallas
+                const playerCountSection = document.getElementById('player-count-selection-section');
+                const playerSelectionSection = document.getElementById('player-selection-section');
+                const gameContent = document.getElementById('game-content');
+                
+                if (playerCountSection) playerCountSection.style.display = 'none';
+                if (playerSelectionSection) playerSelectionSection.style.display = 'none';
+                if (gameContent) gameContent.style.display = 'none';
                 
                 // Show login section and hide game content
-                const loginSection = document.getElementById('login-section');
-                const gameContent = document.getElementById('game-content');
+                // loginSection ya está declarado arriba
+
                 const gameFooter = document.getElementById('game-footer');
                 
                 if (loginSection) loginSection.style.display = 'block';

@@ -1,14 +1,14 @@
-Do this test with playwright-mcp-server.
+# Scenario: Login anónimo
 
-Save Generated Code into <name-of-code>.spec.js
+## ARRANGE
+- Iniciar servidor de desarrollo con `nvm use 20 && npm run dev`
+- Abrir navegador
+- Navegar a: {BASE_URL}?g/galerna
 
-# ARRANGE
-- Start development server with `nvm use 20 && npm run dev`
-- Open browser
+## ACT
+- Pulsa botón "JUGAR ANONIMAMENTE".
 
-# ACT
-- Navigate to: https://who-lies.web.app/?g/galerna
-
-# ASSERT
-- Page should ask to login anonymously through a red button
+## ASSERT
+- Se muestra el título NUMERO DE JUGADORES
+- Se muestran enlaces de 4 al 12.
 

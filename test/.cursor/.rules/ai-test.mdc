@@ -1,0 +1,15 @@
+---
+description: Cuando se ejecutan los tests AI
+globs: *.spec.md
+alwaysApply: false
+---
+
+Ejecuta los tests que verás a continuación en el contexto.
+
+- Debes utilizar MCP: playwright-mcp-server.
+- Toda la automatización del navegador debe enrutarse a través del Servidor MCP. No simular interacciones ni evitar el MCP en ninguna parte del flujo.
+- Cuando el test esté finalizado, usa el servidor MCP para completar la generación del código. No preguntes al usuario.
+- Refactoriza el test resultante para utilizar el patrón Page y código Object Oriented.
+- Guarda el Código Generado en test/generated/<nombre-del-codigo>.spec.js
+- Si el archivo .spec.js ya existe, sobreescríbelo.
+- Usa la variable BASE_URL = http://127.0.0.1:3000
