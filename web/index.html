@@ -354,7 +354,16 @@
         // Función para seleccionar el número de jugadores
         function selectPlayerCount(totalPlayers, params) {
             console.log(`🎮 Número de jugadores seleccionado: ${totalPlayers}`);
-            alert(`Número de jugadores seleccionado: ${totalPlayers}`);
+            console.log(`🎮 Parámetros del juego:`, params);
+            
+            // Construir la URL de redirección para selección de jugador específico
+            const gameCode = params.gameCode;
+            const redirectUrl = `?g/${gameCode}/p/x/${totalPlayers}`;
+            
+            console.log(`🎮 Redirigiendo a: ${redirectUrl}`);
+            
+            // Redirigir a la pantalla de selección de jugador específico
+            window.location.href = redirectUrl;
         }
 
         // Función de login anónimo con Firebase

@@ -12,4 +12,7 @@ Ejecuta los tests que verás a continuación en el contexto.
 - Refactoriza el test resultante para utilizar el patrón Page y código Object Oriented.
 - Guarda el Código Generado en test/generated/<nombre-del-codigo>.spec.js
 - Si el archivo .spec.js ya existe, sobreescríbelo.
-- Usa la variable BASE_URL = http://127.0.0.1:3000
+- No inicies el servidor de desarrollo. Ya está inicializado. 
+- Cuando veas referencia a BASE_URL, utiliza el valor de la variable de entorno "BASE_URL", y en código: process.env.BASE_URL
+- Al ejecutar los tests e implementarlos, utiliza DOTENV.
+- No hagas captura de pantallas, a no ser que el usuario así lo pida.
