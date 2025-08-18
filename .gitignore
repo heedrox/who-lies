@@ -89,3 +89,4 @@ logs/
 
 test/generated/*.png
 test-results/
+test-results/.last-run.json
