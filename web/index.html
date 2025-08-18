@@ -222,6 +222,63 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        /* Player Selection Grid Styles */
+        .player-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .player-selection-option {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 12px;
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            user-select: none;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+        }
+
+        .player-selection-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            border-color: #ff4444;
+            background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+        }
+
+        .player-selection-option:active {
+            transform: translateY(-1px);
+        }
+
+        .player-selection-option.selected {
+            background: linear-gradient(145deg, #8b0000, #a52a2a);
+            border-color: #ff4444;
+            box-shadow: 0 6px 20px rgba(139,0,0,0.6);
+        }
+
+        .player-selection-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ff4444;
+        }
+
+        .player-selection-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -250,6 +307,14 @@
                 <!-- Player count options will be generated dynamically -->
             </div>
         </div>
+
+        <!-- Player Selection Section -->
+        <div id="player-selection-section" class="login-section" style="display: none;">
+            <h2 class="login-title">SELECCIONA TU JUGADOR</h2>
+            <div id="player-options" class="player-options">
+                <!-- Player options will be generated dynamically -->
+            </div>
+        </div>
     </main>
 
     <!-- Firebase Modular Configuration -->
@@ -260,28 +325,52 @@
         
         // Función para obtener parámetros de la URL
         function getUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
             const queryString = window.location.search;
             
             console.log('🔍 getUrlParams() ejecutándose...');
             console.log('🔍 Analizando URL:', window.location.href);
             console.log('🔍 Query string:', queryString);
             console.log('🔍 Query string length:', queryString.length);
-            
-            // Buscar en query string como ?g/CODIGO_JUEGO (sin barra después del ?)
-            const gameCodeMatch = queryString.match(/\?g\/([^\/]+)$/);
-            console.log('🔍 Patrón ?g/CODIGO_JUEGO:', gameCodeMatch);
-            if (gameCodeMatch) {
-                console.log('🎮 Patrón ?g/CODIGO_JUEGO detectado:', gameCodeMatch[1]);
+
+            // 1) Formato: ?g/CODIGO_JUEGO → selección de número de jugadores
+            const gameCodeOnlyMatch = queryString.match(/\?g\/([^\/]+)$/);
+            if (gameCodeOnlyMatch) {
+                console.log('🎮 Patrón ?g/CODIGO_JUEGO detectado:', gameCodeOnlyMatch[1]);
                 return {
-                    gameCode: gameCodeMatch[1],
+                    gameCode: gameCodeOnlyMatch[1],
                     playerNumber: null,
                     totalPlayers: null,
                     needsPlayerSelection: false,
                     needsPlayerCountSelection: true
                 };
             }
-            
+
+            // 2) Formato: ?g/CODIGO_JUEGO/p/x/TOTAL → selección de jugador pendiente
+            const playerSelectionMatch = queryString.match(/\?g\/([^\/]+)\/p\/x\/(\d+)$/);
+            if (playerSelectionMatch) {
+                console.log('🎮 Patrón ?g/CODIGO_JUEGO/p/x/TOTAL detectado:', playerSelectionMatch[1], playerSelectionMatch[2]);
+                return {
+                    gameCode: playerSelectionMatch[1],
+                    playerNumber: null,
+                    totalPlayers: Number(playerSelectionMatch[2]),
+                    needsPlayerSelection: true,
+                    needsPlayerCountSelection: false
+                };
+            }
+
+            // 3) Formato: ?g/CODIGO_JUEGO/p/NUM/TOTAL → juego con jugador ya seleccionado
+            const fullPlayerMatch = queryString.match(/\?g\/([^\/]+)\/p\/(\d+)\/(\d+)$/);
+            if (fullPlayerMatch) {
+                console.log('🎮 Patrón ?g/CODIGO_JUEGO/p/NUM/TOTAL detectado:', fullPlayerMatch[1], fullPlayerMatch[2], fullPlayerMatch[3]);
+                return {
+                    gameCode: fullPlayerMatch[1],
+                    playerNumber: Number(fullPlayerMatch[2]),
+                    totalPlayers: Number(fullPlayerMatch[3]),
+                    needsPlayerSelection: false,
+                    needsPlayerCountSelection: false
+                };
+            }
+
             console.log('❌ No se detectaron parámetros de URL válidos');
             return null;
         }
@@ -303,14 +392,16 @@
                 window.gameParams = params;
                 console.log('🎮 window.gameParams configurado:', window.gameParams);
                 
-                if (params.needsPlayerCountSelection) {
-                    console.log('🎮 Parámetros de selección del número de jugadores detectados, esperando autenticación...');
+                if (params.needsPlayerCountSelection || params.needsPlayerSelection) {
+                    console.log('🎮 Parámetros detectados, esperando autenticación...');
                     // Asegurar que solo se muestre la pantalla de login
                     const loginSection = document.getElementById('login-section');
                     const playerCountSection = document.getElementById('player-count-selection-section');
-                    
+                    const playerSelectionSection = document.getElementById('player-selection-section');
+
                     if (loginSection) loginSection.style.display = 'flex';
                     if (playerCountSection) playerCountSection.style.display = 'none';
+                    if (playerSelectionSection) playerSelectionSection.style.display = 'none';
                 }
             } else {
                 console.log('🎮 Juego iniciado sin parámetros de URL');
@@ -366,6 +457,47 @@
             window.location.href = redirectUrl;
         }
 
+        // Función para mostrar la pantalla de selección de jugador específico
+        function showPlayerSelectionScreen(params) {
+            console.log('🎮 Mostrando pantalla de selección de jugador específico');
+
+            // Ocultar todas las secciones
+            const loginSection = document.getElementById('login-section');
+            const playerCountSelectionSection = document.getElementById('player-count-selection-section');
+            if (loginSection) loginSection.style.display = 'none';
+            if (playerCountSelectionSection) playerCountSelectionSection.style.display = 'none';
+
+            // Mostrar sección de selección de jugador
+            const playerSelectionSection = document.getElementById('player-selection-section');
+            if (playerSelectionSection) playerSelectionSection.style.display = 'block';
+
+            // Generar opciones de jugador (1..totalPlayers)
+            const playerOptions = document.getElementById('player-options');
+            if (playerOptions) {
+                playerOptions.innerHTML = '';
+                for (let i = 1; i <= (params.totalPlayers || 0); i++) {
+                    const option = document.createElement('div');
+                    option.className = 'player-selection-option';
+                    option.onclick = () => selectPlayerNumber(i, params);
+                    option.innerHTML = `
+                        <div class="player-selection-label">JUG.</div>
+                        <div class="player-selection-number">${i}</div>
+                    `;
+                    playerOptions.appendChild(option);
+                }
+            }
+        }
+
+        // Función para seleccionar un jugador específico
+        function selectPlayerNumber(playerNumber, params) {
+            console.log(`🎮 Jugador seleccionado: ${playerNumber}`);
+            const gameCode = params.gameCode;
+            const totalPlayers = params.totalPlayers;
+            const redirectUrl = `?g/${gameCode}/p/${playerNumber}/${totalPlayers}`;
+            console.log(`🎮 Redirigiendo a: ${redirectUrl}`);
+            window.location.href = redirectUrl;
+        }
+
         // Función de login anónimo con Firebase
         async function handleAnonymousLogin() {
             const loginBtn = document.getElementById('login-btn');
@@ -381,10 +513,15 @@
                 
                 console.log('✅ Usuario autenticado exitosamente');
                 
-                // Mostrar pantalla de selección del número de jugadores
-                if (window.gameParams && window.gameParams.needsPlayerCountSelection) {
-                    console.log('🎮 Mostrando pantalla de selección del número de jugadores después de autenticación');
-                    showPlayerCountSelectionScreen(window.gameParams);
+                // Mostrar la pantalla correspondiente tras autenticación
+                if (window.gameParams) {
+                    if (window.gameParams.needsPlayerCountSelection) {
+                        console.log('🎮 Mostrando pantalla de selección del número de jugadores después de autenticación');
+                        showPlayerCountSelectionScreen(window.gameParams);
+                    } else if (window.gameParams.needsPlayerSelection) {
+                        console.log('🎮 Mostrando pantalla de selección de jugador después de autenticación');
+                        showPlayerSelectionScreen(window.gameParams);
+                    }
                 }
                 
             } catch (error) {

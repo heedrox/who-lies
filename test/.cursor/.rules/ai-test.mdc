@@ -16,3 +16,4 @@ Ejecuta los tests que verás a continuación en el contexto.
 - Cuando veas referencia a BASE_URL, utiliza el valor de la variable de entorno "BASE_URL", y en código: process.env.BASE_URL
 - Al ejecutar los tests e implementarlos, utiliza DOTENV.
 - No hagas captura de pantallas, a no ser que el usuario así lo pida.
+- Puedes ejecutar un único test del siguiente modo: `npm run test:e2e -- test/generated/<nombre-del-codigo>.spec.js`
