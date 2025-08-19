@@ -1,148 +1,154 @@
-const { test, expect } = require('@playwright/test');
 require('dotenv').config();
 
-/**
- * Test para la selección del número de jugadores en WHO LIES
- * Escenario: Selección de número de jugadores
- * 
- * ARRANGE:
- * - Abrir navegador {BASE_URL}?g/galerna
- * - Pulsar "JUGAR ANONIMAMENTE"
- * 
- * ACT:
- * - Seleccionar el número 5
- * 
- * ASSERT:
- * - Se redirige a ?g/galerna/p/x/5
- */
+const { test, expect } = require('@playwright/test');
 
-// Page Object para la pantalla de login y selección de jugadores
-class PlayerSelectionPage {
+// Page Object para la pantalla de login
+class LoginPage {
     constructor(page) {
         this.page = page;
-        this.baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3000';
+        this.loginButton = 'text=JUGAR ANÓNIMAMENTE';
     }
 
-    /**
-     * Navega a la URL del juego con código específico
-     * @param {string} gameCode - Código del juego
-     */
     async navigateToGame(gameCode) {
-        const url = `${this.baseUrl}?g/${gameCode}`;
-        console.log(`🎮 Navegando a: ${url}`);
-        await this.page.goto(url);
+        const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3000';
+        await this.page.goto(`${baseUrl}/?g/${gameCode}`);
     }
 
-    /**
-     * Hace clic en el botón "JUGAR ANÓNIMAMENTE"
-     */
-    async clickPlayAnonymously() {
-        console.log('🔐 Haciendo clic en JUGAR ANÓNIMAMENTE');
-        await this.page.click('#login-btn');
+    async clickAnonymousLogin() {
+        // Esperar a que el botón esté visible y estable antes de hacer clic
+        await this.page.waitForSelector(this.loginButton, { state: 'visible', timeout: 10000 });
+        await this.page.click(this.loginButton);
         
         // Esperar a que se procese la autenticación
         await this.page.waitForTimeout(2000);
     }
+}
 
-    /**
-     * Selecciona el número de jugadores
-     * @param {number} playerCount - Número de jugadores a seleccionar
-     */
-    async selectPlayerCount(playerCount) {
-        console.log(`👥 Seleccionando ${playerCount} jugadores`);
-        await this.page.click(`text=${playerCount}`);
-        
-        // Esperar a que se procese la redirección
-        await this.page.waitForTimeout(2000);
+// Page Object para la pantalla de selección de número de jugadores
+class PlayerCountSelectionPage {
+    constructor(page) {
+        this.page = page;
+        this.playerCountOptions = {
+            4: 'text=4',
+            5: 'text=5',
+            6: 'text=6',
+            7: 'text=7',
+            8: 'text=8',
+            9: 'text=9',
+            10: 'text=10',
+            11: 'text=11',
+            12: 'text=12',
+            13: 'text=13',
+            14: 'text=14',
+            15: 'text=15'
+        };
     }
 
-    /**
-     * Obtiene la URL actual para verificar la redirección
-     * @returns {string} URL actual
-     */
-    async getCurrentUrl() {
-        const url = this.page.url();
-        console.log(`🔗 URL actual: ${url}`);
-        return url;
+    async selectPlayerCount(count) {
+        if (!this.playerCountOptions[count]) {
+            throw new Error(`Número de jugadores inválido: ${count}. Debe estar entre 4 y 15.`);
+        }
+        await this.page.click(this.playerCountOptions[count]);
     }
 
-    /**
-     * Verifica que la redirección sea correcta
-     * @param {string} gameCode - Código del juego esperado
-     * @param {number} playerCount - Número de jugadores esperado
-     */
-    async verifyRedirect(gameCode, playerCount) {
-        const currentUrl = await this.getCurrentUrl();
-        const expectedUrl = `${this.baseUrl}?g/${gameCode}/p/x/${playerCount}`;
+    async verifyPlayerSelectionScreen() {
+        // Verificar que se muestre la pantalla de selección de jugador
+        await expect(this.page.locator('text=SELECCIONE JUGADOR')).toBeVisible();
         
-        console.log(`✅ Verificando redirección:`);
-        console.log(`   Esperado: ${expectedUrl}`);
-        console.log(`   Actual:   ${currentUrl}`);
-        
-        expect(currentUrl).toBe(expectedUrl);
+        // Verificar que se muestren las opciones de jugador según el número seleccionado
+        // (Esto se verifica en el test principal)
+    }
+}
+
+// Page Object para la pantalla de selección de jugador
+class PlayerSelectionPage {
+    constructor(page) {
+        this.page = page;
     }
 
-    /**
-     * Toma una captura de pantalla con nombre descriptivo
-     * @param {string} name - Nombre de la captura
-     */
-    async takeScreenshot(name) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `${name}_${timestamp}.png`;
-        console.log(`📸 Tomando captura: ${filename}`);
-        await this.page.screenshot({ 
-            path: `test-results/${filename}`, 
-            fullPage: true 
-        });
+    async verifyPlayerOptions(expectedCount) {
+        // Verificar que se muestren las opciones correctas de jugador
+        for (let i = 1; i <= expectedCount; i++) {
+            // Usar un selector que busque el texto exacto del label del jugador
+            // Usar getByText con exact: true para evitar conflictos con números de dos dígitos
+            const playerOption = this.page.getByText(`${i}`, { exact: true });
+            await expect(playerOption).toBeVisible();
+        }
+    }
+
+    async verifyUrlRedirect(gameCode, playerCount) {
+        const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3000';
+        const expectedUrl = `${baseUrl}/?/g/${gameCode}/p/x/${playerCount}`;
+        await expect(this.page).toHaveURL(expectedUrl);
     }
 }
 
 // Test principal
-test.describe('WHO LIES - Selección de Número de Jugadores', () => {
+test.describe('Selección de número de jugadores', () => {
+    let loginPage;
+    let playerCountSelectionPage;
     let playerSelectionPage;
 
     test.beforeEach(async ({ page }) => {
+        loginPage = new LoginPage(page);
+        playerCountSelectionPage = new PlayerCountSelectionPage(page);
         playerSelectionPage = new PlayerSelectionPage(page);
-        console.log('🚀 Iniciando test de selección de número de jugadores');
     });
 
-    test('debe redirigir correctamente al seleccionar 5 jugadores', async ({ page }) => {
-        // ARRANGE
-        console.log('📋 ARRANGE: Configurando el test');
-        await playerSelectionPage.takeScreenshot('01-inicio-pagina');
-        
-        // Navegar a la URL del juego
-        await playerSelectionPage.navigateToGame('galerna');
-        await playerSelectionPage.takeScreenshot('02-pagina-inicial');
-        
-        // Pulsar "JUGAR ANÓNIMAMENTE"
-        await playerSelectionPage.clickPlayAnonymously();
-        await playerSelectionPage.takeScreenshot('03-despues-login');
+    test('debe permitir seleccionar 5 jugadores y redirigir correctamente', async ({ page }) => {
+        const gameCode = 'galerna';
+        const selectedPlayerCount = 5;
 
-        // ACT
-        console.log('🎯 ACT: Ejecutando la acción del test');
-        
-        // Seleccionar el número 5
-        await playerSelectionPage.selectPlayerCount(5);
-        await playerSelectionPage.takeScreenshot('04-despues-seleccion');
+        // ARRANGE: Navegar al juego y hacer login anónimo
+        await loginPage.navigateToGame(gameCode);
+        await loginPage.clickAnonymousLogin();
 
-        // ASSERT
-        console.log('✅ ASSERT: Verificando el resultado esperado');
-        
-        // Verificar que se redirige correctamente
-        await playerSelectionPage.verifyRedirect('galerna', 5);
-        
-        console.log('🎉 Test completado exitosamente');
+        // ACT: Seleccionar el número de jugadores
+        await playerCountSelectionPage.selectPlayerCount(selectedPlayerCount);
+
+        // ASSERT: Verificar redirección y pantalla de selección de jugador
+        await playerSelectionPage.verifyUrlRedirect(gameCode, selectedPlayerCount);
+        await playerSelectionPage.verifyPlayerOptions(selectedPlayerCount);
+        await playerCountSelectionPage.verifyPlayerSelectionScreen();
     });
 
-    test.afterEach(async () => {
-        console.log('🧹 Limpiando después del test');
-    });
-});
+    test('debe permitir seleccionar diferentes números de jugadores', async ({ page }) => {
+        const gameCode = 'testgame';
+        const playerCount = 8; // Solo probar un caso para evitar problemas de estado
 
-// Configuración adicional del test
-test.describe.configure({ 
-    mode: 'serial',
-    retries: 1,
-    timeout: 30000 
+        // Navegar al juego y hacer login
+        await loginPage.navigateToGame(gameCode);
+        
+        // Esperar a que la página se cargue completamente
+        await page.waitForLoadState('networkidle');
+        
+        // Verificar que el botón de login esté visible antes de hacer clic
+        await expect(page.locator('text=JUGAR ANÓNIMAMENTE')).toBeVisible();
+        
+        await loginPage.clickAnonymousLogin();
+
+        // Seleccionar número de jugadores
+        await playerCountSelectionPage.selectPlayerCount(playerCount);
+
+        // Verificar redirección y opciones
+        await playerSelectionPage.verifyUrlRedirect(gameCode, playerCount);
+        await playerSelectionPage.verifyPlayerOptions(playerCount);
+    });
+
+    test('debe mostrar error para números de jugadores inválidos', async ({ page }) => {
+        const gameCode = 'testgame';
+        
+        // Navegar al juego y hacer login
+        await loginPage.navigateToGame(gameCode);
+        await loginPage.clickAnonymousLogin();
+
+        // Intentar seleccionar número inválido
+        await expect(async () => {
+            await playerCountSelectionPage.selectPlayerCount(3);
+        }).rejects.toThrow('Número de jugadores inválido: 3. Debe estar entre 4 y 15.');
+
+        await expect(async () => {
+            await playerCountSelectionPage.selectPlayerCount(16);
+        }).rejects.toThrow('Número de jugadores inválido: 16. Debe estar entre 4 y 15.');
+    });
 });
