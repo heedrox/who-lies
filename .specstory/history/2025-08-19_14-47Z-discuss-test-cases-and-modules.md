@@ -1726,3 +1726,129 @@ Ha sido genial trabajar juntos en este test. Me has enseñado aspectos important
 
 ---
 
+_**User**_
+
+commit y push
+
+---
+
+_**Assistant**_
+
+¡Perfecto! Voy a hacer commit y push de los cambios del test que acabamos de crear.
+
+
+---
+
+```bash
+git add test/generated/4-test-one-asesino-and-one-complice.spec.js
+```
+
+```
+(base) ➜  who-lies git:(main) ✗ git add test/generated/4-test-one-asesino-and-one-complice.spec.js
+```
+
+---
+
+```bash
+git status
+```
+
+```
+(base) ➜  who-lies git:(main) ✗ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   ".specstory/history/2025-08-19_14-44Z-test-one-asesino-and-one-c\303\263mplice.md"
+        new file:   .specstory/history/2025-08-19_14-47Z-discuss-test-cases-and-modules.md
+        new file:   test/4-test-one-asesino-and-one-complice.md
+        new file:   test/generated/4-test-one-asesino-and-one-complice.spec.js
+
+(base) ➜  who-lies git:(main) ✗
+```
+
+---
+
+Veo que hay varios archivos nuevos. Voy a agregar todos los archivos relacionados con el test:
+
+
+---
+
+```bash
+git add test/4-test-one-asesino-and-one-complice.md
+```
+
+```
+(base) ➜  who-lies git:(main) ✗ git add test/4-test-one-asesino-and-one-complice.md
+```
+
+---
+
+```bash
+git commit -m "feat: Add test for one assassin and one accomplice scenario
+
+- Add test specification in markdown format
+- Implement Playwright test that verifies correct role distribution
+- Test validates: 1 ASESINO, 1 COMPLICE, 3 INVITADOS after game restart
+- Test navigates to each player position to verify roles
+- Includes proper Page Object pattern and error handling"
+```
+
+```
+<ludes proper Page Object pattern and error handling"
+[main 516fcaf] feat: Add test for one assassin and one accomplice scenario
+ 4 files changed, 2343 insertions(+)
+ create mode 100644 ".specstory/history/2025-08-19_14-44Z-test-one-asesino-and-one-c\303\263mplice.md"
+ create mode 100644 .specstory/history/2025-08-19_14-47Z-discuss-test-cases-and-modules.md
+ create mode 100644 test/4-test-one-asesino-and-one-complice.md
+ create mode 100644 test/generated/4-test-one-asesino-and-one-complice.spec.js
+```
+
+---
+
+```bash
+git push origin main
+```
+
+```
+(base) ➜  who-lies git:(main) git push origin main
+Enumerating objects: 15, done.
+Counting objects: 100% (15/15), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (10/10), 18.01 KiB | 6.00 MiB/s, done.
+Total 10 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:heedrox/who-lies.git
+   2a77bdb..516fcaf  main -> main
+```
+
+---
+
+¡Perfecto! 🎉 He completado el commit y push exitosamente.
+
+## ✅ **Resumen del commit:**
+
+**Commit ID:** `516fcaf`  
+**Mensaje:** "feat: Add test for one assassin and one accomplice scenario"
+
+### **Archivos agregados:**
+- `test/4-test-one-asesino-and-one-complice.md` - Especificación del test
+- `test/generated/4-test-one-asesino-and-one-complice.spec.js` - Test de Playwright implementado
+- Archivos de historial de SpecStory
+
+### **Cambios realizados:**
+- **4 archivos modificados**
+- **2,343 líneas agregadas**
+- Test funcional que verifica la distribución correcta de roles
+
+### **Push exitoso:**
+- **10 objetos enviados** al repositorio remoto
+- **18.01 KiB** de datos transferidos
+- Sincronizado con `origin/main`
+
+El test está ahora disponible en el repositorio y puede ser ejecutado por cualquier desarrollador del equipo. ¡Excelente trabajo! 🚀
+
+---
+

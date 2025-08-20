@@ -49,6 +49,12 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
         const { db, auth } = getFirebaseServices();
         const { doc, setDoc, serverTimestamp } = window.firebaseServices;
 
+        // Crear diccionario de preguntas inicializado en 0 para todos los jugadores
+        const numberQuestionsMade = {};
+        for (let i = 1; i <= totalPlayers; i++) {
+            numberQuestionsMade[i] = 0;
+        }
+
         const gameData = {
             totalPlayers: totalPlayers,
             playerDistribution: distribution,
@@ -60,7 +66,9 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
             endingRound: false,
             roundNumber: 1,
             // Campo para el sistema de muertes
-            deads: []
+            deads: [],
+            // Campo para el sistema de preguntas
+            numberQuestionsMade: numberQuestionsMade
         };
         
         // Agregar visibilidad si se proporciona
@@ -196,15 +204,52 @@ async function resetDeadsArray() {
         const { db } = getFirebaseServices();
         const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
         
+        // Crear diccionario de preguntas reseteado a 0 para todos los jugadores
+        const numberQuestionsMade = {};
+        for (let i = 1; i <= params.totalPlayers; i++) {
+            numberQuestionsMade[i] = 0;
+        }
+        
         await updateDoc(doc(db, 'games', params.gameCode), {
             deads: [],
+            numberQuestionsMade: numberQuestionsMade,
             lastUpdated: serverTimestamp()
         });
         
-        console.log('✅ Array de muertos reseteado exitosamente');
+        console.log('✅ Array de muertos y contadores de preguntas reseteados exitosamente');
         return true;
     } catch (error) {
-        console.error('❌ Error al resetear array de muertos:', error);
+        console.error('❌ Error al resetear array de muertos y contadores:', error);
+        throw error;
+    }
+}
+
+// Función para actualizar el contador de preguntas de un jugador
+async function updateQuestionCount(gameCode, playerNumber) {
+    try {
+        const { db } = getFirebaseServices();
+        const { doc, updateDoc, serverTimestamp, getDoc } = window.firebaseServices;
+        
+        // Obtener el documento actual para verificar el contador actual
+        const docSnap = await getDoc(doc(db, 'games', gameCode));
+        if (!docSnap.exists()) {
+            throw new Error('Juego no encontrado');
+        }
+        
+        const currentData = docSnap.data();
+        const currentCount = currentData.numberQuestionsMade?.[playerNumber] || 0;
+        const newCount = currentCount + 1;
+        
+        // Actualizar solo el contador del jugador específico
+        await updateDoc(doc(db, 'games', gameCode), {
+            [`numberQuestionsMade.${playerNumber}`]: newCount,
+            lastUpdated: serverTimestamp()
+        });
+        
+        console.log(`✅ Contador de preguntas del jugador ${playerNumber} actualizado: ${currentCount} → ${newCount}`);
+        return newCount;
+    } catch (error) {
+        console.error('❌ Error al actualizar contador de preguntas:', error);
         throw error;
     }
 }
@@ -556,6 +601,7 @@ window.FirebaseModular = {
     updatePlayerMovement,
     saveKillSelection,
     resetDeadsArray,
+    updateQuestionCount,
     checkAllPlayersMoved,
     finalizeRound,
     

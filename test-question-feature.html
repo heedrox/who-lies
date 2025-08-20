@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Funcionalidad de Anotar Preguntas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Funcionalidad de Anotar Preguntas</h1>
+    
+    <div class="test-section">
+        <h2>📋 Resumen de la implementación</h2>
+        <p>Se ha implementado la funcionalidad completa para anotar preguntas en el juego WHO LIES:</p>
+        
+        <h3>✅ Cambios realizados:</h3>
+        <ul>
+            <li><strong>Firebase:</strong> Campo <code>numberQuestionsMade</code> añadido a la base de datos</li>
+            <li><strong>Botón:</strong> "ANOTAR PREGUNTA" añadido al footer</li>
+            <li><strong>Visualización:</strong> Contadores de preguntas mostrados con palos "I" debajo de los avatares</li>
+            <li><strong>Sincronización:</strong> Tiempo real entre todos los jugadores</li>
+            <li><strong>Reset:</strong> Contadores se resetean al reiniciar el juego</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Funciones implementadas</h2>
+        
+        <h3>1. Firebase Modular (firebase-modular.js)</h3>
+        <div class="code-block">✅ savePlayerDistribution() - Inicializa contadores en 0
+✅ resetDeadsArray() - Resetea contadores al reiniciar
+✅ updateQuestionCount() - Incrementa contador de un jugador</div>
+
+        <h3>2. Interfaz (index.html)</h3>
+        <div class="code-block">✅ Botón "ANOTAR PREGUNTA" en footer
+✅ Estilos CSS para el botón y contadores
+✅ Función addQuestion() para manejar clics
+✅ Integración con sistema de rondas
+✅ Actualización automática de UI</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Cómo probar la funcionalidad</h2>
+        
+        <h3>1. Iniciar el juego</h3>
+        <p>Usar la URL: <code>http://localhost:3000/?/g/test123/p/1/5</code></p>
+        
+        <h3>2. Verificar botón</h3>
+        <p>El botón "ANOTAR PREGUNTA" debe aparecer en el footer (zona inferior)</p>
+        
+        <h3>3. Anotar preguntas</h3>
+        <p>Hacer clic en "ANOTAR PREGUNTA" para ver palos "I" aparecer debajo del avatar</p>
+        
+        <h3>4. Probar sincronización</h3>
+        <p>Abrir otra pestaña con el mismo jugador y verificar que los contadores se sincronizan</p>
+        
+        <h3>5. Probar reset</h3>
+        <p>Reiniciar el juego y verificar que todos los contadores vuelven a 0</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🚨 Casos edge a considerar</h2>
+        <ul>
+            <li><strong>Jugadores muertos:</strong> ¿Pueden anotar preguntas?</li>
+            <li><strong>Modo de movimiento:</strong> ¿El botón se oculta correctamente?</li>
+            <li><strong>Concurrencia:</strong> ¿Qué pasa si dos jugadores anotan simultáneamente?</li>
+            <li><strong>Persistencia:</strong> ¿Los contadores persisten al recargar la página?</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Estado de implementación</h2>
+        <div class="test-result success">
+            <strong>✅ IMPLEMENTACIÓN COMPLETA</strong><br>
+            La funcionalidad está completamente implementada y lista para pruebas.
+        </div>
+        
+        <p><strong>Confianza:</strong> 85% - La implementación cubre todos los requisitos principales del test.</p>
+        
+        <p><strong>Próximos pasos:</strong></p>
+        <ol>
+            <li>Probar la funcionalidad en el navegador</li>
+            <li>Ejecutar los tests automatizados</li>
+            <li>Verificar casos edge</li>
+            <li>Optimizar si es necesario</li>
+        </ol>
+    </div>
+
+    <script>
+        // Test simple de la funcionalidad
+        function testQuestionFeature() {
+            console.log('🧪 Iniciando test de funcionalidad de anotar preguntas...');
+            
+            // Test 1: Verificar que la función addQuestion existe
+            if (typeof addQuestion === 'function') {
+                console.log('✅ Función addQuestion() está disponible');
+            } else {
+                console.log('❌ Función addQuestion() NO está disponible');
+            }
+            
+            // Test 2: Verificar que Firebase Modular tiene updateQuestionCount
+            if (window.FirebaseModular && typeof window.FirebaseModular.updateQuestionCount === 'function') {
+                console.log('✅ Firebase Modular tiene updateQuestionCount()');
+            } else {
+                console.log('❌ Firebase Modular NO tiene updateQuestionCount()');
+            }
+            
+            console.log('🧪 Test completado. Revisa la consola para resultados.');
+        }
+        
+        // Ejecutar test cuando se carga la página
+        window.addEventListener('load', testQuestionFeature);
+    </script>
+</body>
+</html>

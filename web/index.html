@@ -318,6 +318,11 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .end-round-btn {
@@ -333,8 +338,8 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin: auto;
-            display: block;
+            margin: 0;
+            min-width: 200px;
         }
 
         .end-round-btn:hover {
@@ -350,6 +355,43 @@
         .end-round-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .add-question-btn {
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            min-width: 200px;
+        }
+
+        .add-question-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(145deg, #66bb6a, #4caf50);
+        }
+
+        .add-question-btn:active {
+            transform: translateY(0);
+        }
+
+        .add-question-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Estilos para cuando solo está visible ANOTAR PREGUNTA (otros jugadores) */
+        .footer.single-button {
+            justify-content: center;
         }
 
         /* Modal de acusación */
@@ -1074,6 +1116,16 @@
             font-size: 1rem;
         }
 
+        .question-counter {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 2px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
         .player-status-text {
             font-size: 0.8rem;
             opacity: 0.9;
@@ -1207,6 +1259,7 @@
 
             <footer id="game-footer" class="footer" style="display: none;">
             <button class="end-round-btn" onclick="endRound()" style="display: none;">TERMINAR RONDA</button>
+            <button class="add-question-btn" onclick="addQuestion()" style="display: none;">ANOTAR PREGUNTA</button>
         </footer>
 
     <!-- Firebase Configuration -->
@@ -1785,11 +1838,20 @@
             
             // Mostrar botón "TERMINAR RONDA" solo para el jugador 1
             const endRoundBtn = document.querySelector('.end-round-btn');
+            const gameFooter = document.getElementById('game-footer');
             if (endRoundBtn && window.gameParams) {
                 if (window.gameParams.playerNumber === 1) {
-                    endRoundBtn.style.display = 'block';
+                    endRoundBtn.style.display = 'inline';
+                    // Remover clase single-button para mostrar botones lado a lado
+                    if (gameFooter) {
+                        gameFooter.classList.remove('single-button');
+                    }
                 } else {
                     endRoundBtn.style.display = 'none';
+                    // Añadir clase single-button para centrar ANOTAR PREGUNTA
+                    if (gameFooter) {
+                        gameFooter.classList.add('single-button');
+                    }
                 }
             }
             
@@ -1831,7 +1893,18 @@
             // Por ejemplo, mostrar qué jugadores están en cada habitación
             updateRoomDisplay(gameData.playerDistribution);
             
-
+            // Mostrar botón "ANOTAR PREGUNTA" solo cuando no esté en modo de movimiento
+            const addQuestionBtn = document.querySelector('.add-question-btn');
+            if (addQuestionBtn) {
+                if (!gameData.endingRound) {
+                    addQuestionBtn.style.display = 'inline';
+                } else {
+                    addQuestionBtn.style.display = 'none';
+                }
+            }
+            
+            // Actualizar estado de jugadores (incluyendo contadores de preguntas)
+            showDeadsInfo();
         }
 
         // Función para habilitar el modo de movimiento
@@ -1844,6 +1917,12 @@
                 endRoundBtn.textContent = 'SIGUIENTE RONDA';
                 endRoundBtn.disabled = true;
                 endRoundBtn.classList.add('disabled');
+            }
+            
+            // Ocultar botón "ANOTAR PREGUNTA" durante el modo de movimiento
+            const addQuestionBtn = document.querySelector('.add-question-btn');
+            if (addQuestionBtn) {
+                addQuestionBtn.style.display = 'none';
             }
             
             // Mostrar indicador de modo de movimiento
@@ -2203,7 +2282,7 @@
                     endRoundBtn.textContent = 'TERMINAR RONDA';
                     endRoundBtn.disabled = false;
                     endRoundBtn.classList.remove('ready-to-advance');
-                    endRoundBtn.style.display = 'block';
+                    endRoundBtn.style.display = 'inline';
                 } else {
                     endRoundBtn.style.display = 'none';
                 }
@@ -2218,7 +2297,11 @@
             // Deshabilitar selección de habitaciones
             disableRoomSelection();
             
-
+            // Mostrar botón "ANOTAR PREGUNTA" cuando se deshabilita el modo de movimiento
+            const addQuestionBtn = document.querySelector('.add-question-btn');
+            if (addQuestionBtn) {
+                addQuestionBtn.style.display = 'inline';
+            }
             
             // El estado de jugadores se mantiene visible siempre
         }
@@ -2707,10 +2790,15 @@
                 const emoji = isDead ? '👻' : '👤';
                 const statusClass = isDead ? 'dead' : 'alive';
                 
+                // Obtener contador de preguntas del jugador
+                const questionCount = gameData.numberQuestionsMade?.[i] || 0;
+                const questionSticks = 'I'.repeat(questionCount);
+                
                 playersStatusHTML += `
                     <div class="player-status-cell ${statusClass}">
                         <span class="player-status-number">${i}</span>
                         <span class="player-status-emoji">${emoji}</span>
+                        ${questionSticks ? `<div class="question-counter">${questionSticks}</div>` : ''}
                     </div>
                 `;
             }
@@ -2916,6 +3004,29 @@
             }
         }
 
+        async function addQuestion() {
+            try {
+                if (!window.gameParams) {
+                    console.error('❌ No hay parámetros de juego disponibles');
+                    return;
+                }
+
+                const playerNumber = window.gameParams.playerNumber;
+                const gameCode = window.gameParams.gameCode;
+
+                console.log(`❓ Jugador ${playerNumber} anotando una pregunta...`);
+
+                // Actualizar contador en Firebase
+                await window.FirebaseModular.updateQuestionCount(gameCode, playerNumber);
+                
+                console.log(`✅ Pregunta anotada para el jugador ${playerNumber}`);
+
+            } catch (error) {
+                console.error('❌ Error al anotar pregunta:', error);
+                alert('Error al anotar la pregunta. Por favor, intenta de nuevo.');
+            }
+        }
+
         async function restartGame() {
             const confirmRestart = confirm('¿REALMENTE QUIERES REINICIAR EL JUEGO?');
             if (!confirmRestart) return;
@@ -3010,7 +3121,7 @@
                 // Mostrar botón "TERMINAR RONDA" solo para jugador 1
                 const endRoundBtn = document.querySelector('.end-round-btn');
                 if (endRoundBtn && window.gameParams && window.gameParams.playerNumber === 1) {
-                    endRoundBtn.style.display = 'block';
+                    endRoundBtn.style.display = 'inline';
                 } else {
                     endRoundBtn.style.display = 'none';
                 }

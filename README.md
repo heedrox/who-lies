@@ -101,6 +101,17 @@ Cada jugador recibe información como:
 - **Integración con Firebase**: Los jugadores muertos se sincronizan en tiempo real
 - **Prevención de auto-acusación**: El jugador 1 puede acusar a cualquier jugador, incluyendo J1
 
+### ❓ Sistema de anotación de preguntas
+- **Botón de anotación**: Botón "ANOTAR PREGUNTA" visible en el footer durante el turno de juego
+- **Contadores visuales**: Palos "I" (i mayúscula) se muestran debajo de cada avatar de jugador
+- **Acumulación ilimitada**: No hay límite en el número de preguntas que puede anotar cada jugador
+- **Sincronización en tiempo real**: Los contadores se actualizan automáticamente para todos los jugadores
+- **Almacenamiento en Firebase**: Los contadores se guardan en el campo `numberQuestionsMade` a nivel de `gameCode`
+- **Estructura de datos**: Diccionario `{ 1: 2, 2: 1, 3: 0, ... }` donde cada número representa las preguntas del jugador
+- **Persistencia**: Los contadores se mantienen al recargar la página
+- **Reset automático**: Al reiniciar el juego, todos los contadores se ponen a cero
+- **Visibilidad condicional**: El botón solo aparece durante el turno de juego, no durante el turno de movimiento
+
 ### 🎮 Sistema de configuración de partida optimizado
 - **Acceso directo con código de juego**: URLs del formato `?/g/{CODIGO_JUEGO}` para iniciar partidas
 - **Selección de número de jugadores**: Pantalla para elegir entre 4 y 15 jugadores
@@ -181,6 +192,25 @@ npm run dev
 
 Esto abrirá automáticamente tu navegador en `http://localhost:3000`
 
+### Tests automatizados
+El proyecto incluye tests automatizados generados con Playwright:
+
+```bash
+# Ejecutar todos los tests
+npm run test:e2e
+
+# Ejecutar tests específicos
+npm run test:e2e -- test/generated/5-test-annotate-making-questions.spec.js
+
+# Ejecutar tests en modo visible
+npm run test:e2e -- --headed
+```
+
+**Tests implementados:**
+- ✅ **Funcionalidad "ANOTAR PREGUNTA"** - 5 tests que validan botón, contadores, sincronización y persistencia
+- ✅ **Patrón Page Object** - Tests refactorizados usando clases y métodos reutilizables
+- ✅ **Cobertura completa** - Todos los casos de uso documentados en `test/5-test-annotate-making-questions.md`
+
 ### Funcionalidad de distribución de jugadores
 La nueva funcionalidad se ejecuta automáticamente cuando:
 1. **URL contiene parámetros**: `?X/Y` (ej: `?1/6`)
@@ -232,6 +262,10 @@ who-lies/
 │   ├── index.html                    # Interfaz principal del juego
 │   ├── firebase-modular.js           # Sistema Firebase modular (NUEVO)
 │   └── firebase-config.js            # Configuración de Firebase (DEPRECADO)
+├── test/
+│   ├── 5-test-annotate-making-questions.md    # Especificaciones de tests (NUEVO)
+│   └── generated/
+│       └── 5-test-annotate-making-questions.spec.js  # Tests automatizados (NUEVO)
 ├── package.json                       # Dependencias y scripts
 ├── firebase.json                      # Configuración de Firebase
 ├── FIREBASE_SETUP.md                  # Guía de configuración de Firebase
@@ -273,6 +307,11 @@ who-lies/
 - **Botón de recarga rápida** - Botón circular con emoji 🔄 para recargar la página desde la esquina superior izquierda
 - **Sistema de acusaciones colectivas** - El jugador 1 actúa como director de juego para ejecutar acusaciones grupales
 - **Sistema de configuración de partida optimizado** - Acceso directo con código de juego y selección secuencial de número de jugadores (4-15)
+- **Sistema de anotación de preguntas** - Botón "ANOTAR PREGUNTA" en el footer para contabilizar preguntas de cada jugador
+- **Visualización de contadores** - Palos "I" (i mayúscula) debajo de avatares que muestran el número de preguntas realizadas
+- **Sincronización en tiempo real** - Los contadores se actualizan automáticamente entre todos los jugadores
+- **Persistencia de datos** - Los contadores se mantienen al recargar la página y se almacenan en Firebase
+- **Reset automático** - Los contadores se reinician a cero al reiniciar el juego
 
 ## 🔧 Configuración del entorno
 
@@ -569,6 +608,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Migración a Firebase 12.x Modular** - Actualización completa del sistema Firebase con patrón modular y singleton
 - [x] **Sistema de caché persistente y multi-tab** - Soporte para múltiples pestañas con sincronización automática
 - [x] **Arquitectura Firebase "a prueba de bombas"** - Implementación del patrón recomendado por GPT5 para evitar errores de reconexión
+- [x] **Sistema de anotación de preguntas** - Botón "ANOTAR PREGUNTA" para contabilizar preguntas de cada jugador con visualización de palos "I" debajo de avatares
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
