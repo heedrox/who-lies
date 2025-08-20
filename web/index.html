@@ -1279,7 +1279,7 @@
             console.log('🔍 Query string length:', queryString.length);
             
             // Buscar en query string como ?/g/CODIGO_JUEGO/p/X/Y
-            const match = queryString.match(/\?\/g\/([^\/]+)\/p\/([^\/]+)\/(\d+)/);
+            const match = queryString.match(/\?\/?g\/([^\/]+)\/p\/([^\/]+)\/(\d+)/);
             console.log('🔍 Patrón ?/g/CODIGO_JUEGO/p/X/Y:', match);
             
             if (match) {
@@ -1309,7 +1309,7 @@
             }
             
             // Buscar en query string como ?g/CODIGO_JUEGO (sin barra después del ?)
-            const gameCodeMatch = queryString.match(/\?g\/([^\/]+)$/);
+            const gameCodeMatch = queryString.match(/\?\/?g\/([^\/]+)$/);
             console.log('🔍 Patrón ?g/CODIGO_JUEGO:', gameCodeMatch);
             if (gameCodeMatch) {
                 console.log('🎮 Patrón ?g/CODIGO_JUEGO detectado:', gameCodeMatch[1]);

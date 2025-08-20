@@ -78,7 +78,7 @@ class PlayerSpecificSelectionPage {
      */
     async verifyRedirect(gameCode, playerNumber, totalPlayers) {
         const currentUrl = await this.getCurrentUrl();
-        const expectedUrl = `${this.baseUrl}?g/${gameCode}/p/${playerNumber}/${totalPlayers}`;
+        const expectedUrl = `${this.baseUrl}?/g/${gameCode}/p/${playerNumber}/${totalPlayers}`;
         
         console.log(`✅ Verificando redirección:`);
         console.log(`   Esperado: ${expectedUrl}`);
@@ -108,7 +108,7 @@ class PlayerSpecificSelectionPage {
         console.log('🔍 Verificando que se muestre la pantalla de selección de jugador');
         
         // Esperar a que aparezca el título de selección de jugador
-        const title = this.page.locator('h2:has-text("SELECCIONA TU JUGADOR")');
+        const title = this.page.locator('h2:has-text("SELECCIONE JUGADOR")');
         await expect(title).toBeVisible();
         
         // Verificar que hay opciones de jugadores disponibles
