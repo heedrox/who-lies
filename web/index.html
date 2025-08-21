@@ -1715,6 +1715,16 @@
             const roleElement = document.getElementById('player-role');
             const profileTitleElement = document.getElementById('profile-title');
             const roleInfoElement = document.getElementById('role-info');
+            let targetInfoElement = document.getElementById('target-info');
+            if (!targetInfoElement) {
+                targetInfoElement = document.createElement('div');
+                targetInfoElement.id = 'target-info';
+                targetInfoElement.className = 'role-info';
+                // Insertar debajo del role-info existente
+                if (roleInfoElement && roleInfoElement.parentNode) {
+                    roleInfoElement.parentNode.insertBefore(targetInfoElement, roleInfoElement.nextSibling);
+                }
+            }
             
             if (!profileElement || !roleElement || !profileTitleElement || !roleInfoElement) return;
             
@@ -1760,6 +1770,16 @@
                 // Para invitados, no mostrar información adicional
                 roleInfoElement.style.display = 'none';
                 console.log(`👤 INVITADO ${playerNumber} no puede ver información adicional de roles`);
+            }
+
+            // Mostrar objetivo del asesino para ASESINO y COMPLICE
+            const target = window.gameData && typeof window.gameData.targetAsesino === 'number' ? window.gameData.targetAsesino : null;
+            if ((role === 'ASESINO/A' || role === 'COMPLICE') && target) {
+                targetInfoElement.textContent = `OBJETIVO: JUG. ${target}`;
+                targetInfoElement.style.display = 'block';
+                console.log(`🎯 ${role} ve el objetivo: JUG. ${target}`);
+            } else {
+                if (targetInfoElement) targetInfoElement.style.display = 'none';
             }
             
             // Mostrar el perfil

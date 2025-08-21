@@ -202,7 +202,7 @@ async function resetDeadsArray() {
         }
         
         const { db } = getFirebaseServices();
-        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
+        const { doc, updateDoc, serverTimestamp, getDoc } = window.firebaseServices;
         
         // Crear diccionario de preguntas reseteado a 0 para todos los jugadores
         const numberQuestionsMade = {};
@@ -210,13 +210,36 @@ async function resetDeadsArray() {
             numberQuestionsMade[i] = 0;
         }
         
-        await updateDoc(doc(db, 'games', params.gameCode), {
+        // Obtener datos actuales del juego para conocer roles y total de jugadores
+        const gameDocRef = doc(db, 'games', params.gameCode);
+        const gameSnap = await getDoc(gameDocRef);
+        const currentData = gameSnap.exists() ? gameSnap.data() : {};
+
+        const totalPlayers = currentData.totalPlayers || params.totalPlayers;
+        const assassinNumber = currentData.roles?.ASESINO || null;
+
+        // Elegir objetivo del asesino (distinto del propio asesino)
+        let targetAsesino = null;
+        if (totalPlayers && assassinNumber) {
+            do {
+                targetAsesino = Math.floor(Math.random() * totalPlayers) + 1;
+            } while (targetAsesino === assassinNumber);
+        }
+
+        await updateDoc(gameDocRef, {
             deads: [],
             numberQuestionsMade: numberQuestionsMade,
+            // Definir el objetivo del asesino para la nueva partida
+            targetAsesino: targetAsesino,
             lastUpdated: serverTimestamp()
         });
         
         console.log('✅ Array de muertos y contadores de preguntas reseteados exitosamente');
+        if (typeof targetAsesino === 'number') {
+            console.log(`🎯 Objetivo del asesino definido: JUG. ${targetAsesino}`);
+        } else {
+            console.log('ℹ️ No se pudo definir objetivo del asesino (faltan datos de roles)');
+        }
         return true;
     } catch (error) {
         console.error('❌ Error al resetear array de muertos y contadores:', error);
