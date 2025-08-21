@@ -332,6 +332,15 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
         
         // Limpiar campo nextDeath
         updateData.nextDeath = deleteField();
+
+        // Resetear contadores de preguntas al finalizar la ronda
+        const totalPlayers = currentData.totalPlayers || Object.values(newDistribution).flat().length;
+        const numberQuestionsMadeReset = {};
+        for (let i = 1; i <= totalPlayers; i++) {
+            numberQuestionsMadeReset[i] = 0;
+        }
+        updateData.numberQuestionsMade = numberQuestionsMadeReset;
+
         await updateDoc(doc(db, 'games', gameCode), updateData);
         console.log('✅ Ronda finalizada, visibilidad recalculada');
         return true;
