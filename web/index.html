@@ -100,6 +100,38 @@
             font-style: italic;
         }
 
+        /* Barra de progreso de ronda */
+        .round-progress {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 10px auto 0;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .round-progress-text {
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-align: center;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+        .round-progress-bar {
+            height: 8px;
+            background: #1f1f1f;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #5a1a1a;
+        }
+        .round-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff4444 0%, #cc0000 100%);
+            transition: width 0.4s ease;
+        }
+
         /* Botón de reiniciar juego */
         .restart-game-btn {
             position: absolute;
@@ -1161,6 +1193,10 @@
         <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR</button>
     </header>
 
+    <div id="round-progress" class="round-progress">
+        <div id="round-progress-text" class="round-progress-text">RONDA: 1/5</div>
+        <div class="round-progress-bar"><div id="round-progress-fill" class="round-progress-fill" style="width:20%"></div></div>
+    </div>
 
 
     <main class="main-content">
@@ -1839,6 +1875,9 @@
             
             console.log('🔄 Actualización en tiempo real recibida:', gameData);
             
+            // Actualizar barra de ronda
+            updateRoundProgress(gameData);
+            
             // Actualizar estado de conexión como conectado
             updateConnectionStatus('connected', '🟢 Conectado a Firebase');
             
@@ -1902,6 +1941,9 @@
             
             // Guardar datos del juego globalmente para acceso desde otras funciones
             window.gameData = gameData;
+            
+            // Actualizar barra de ronda
+            updateRoundProgress(gameData);
             
             // Mostrar información de visibilidad si está disponible
             if (gameData.playerVisibility) {
@@ -2339,9 +2381,14 @@
                     <div class="movement-subtitle">Selecciona una habitación para moverte</div>
                 `;
                 
-                // Insertar después del header
+                // Insertar después del header o de la barra de ronda si existe
                 const header = document.querySelector('.header');
-                header.parentNode.insertBefore(indicator, header.nextSibling);
+                const roundProgress = document.getElementById('round-progress');
+                if (roundProgress && roundProgress.parentNode === header.parentNode) {
+                    header.parentNode.insertBefore(indicator, roundProgress.nextSibling);
+                } else {
+                    header.parentNode.insertBefore(indicator, header.nextSibling);
+                }
             }
             indicator.style.display = 'block';
         }
@@ -3455,6 +3502,27 @@
                     });
                 }
             });
+        }
+
+        // Actualizar barra de progreso de ronda
+        function updateRoundProgress(gameData) {
+            try {
+                const container = document.getElementById('round-progress');
+                const textEl = document.getElementById('round-progress-text');
+                const fillEl = document.getElementById('round-progress-fill');
+                if (!container || !textEl || !fillEl) return;
+
+                const totalRounds = 5;
+                const currentRoundRaw = (typeof gameData.numRound === 'number') ? gameData.numRound : (typeof gameData.roundNumber === 'number' ? gameData.roundNumber : 1);
+                const currentRound = Math.max(1, Math.min(totalRounds, currentRoundRaw));
+                const percent = Math.round((currentRound / totalRounds) * 100);
+
+                textEl.textContent = `RONDA: ${currentRound}/${totalRounds}`;
+                fillEl.style.width = `${percent}%`;
+                container.style.display = 'block';
+            } catch (e) {
+                console.error('❌ Error al actualizar barra de ronda:', e);
+            }
         }
 
     </script>

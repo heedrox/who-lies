@@ -65,6 +65,7 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
             // Campos para el sistema de rondas
             endingRound: false,
             roundNumber: 1,
+            numRound: 1,
             // Campo para el sistema de muertes
             deads: [],
             // Campo para el sistema de preguntas
@@ -325,6 +326,12 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
             endingRound: false,
             lastUpdated: serverTimestamp()
         };
+        
+        // Incrementar número de ronda (sin exceder 5 para UI; la BBDD puede reflejar valor real)
+        const previousRound = typeof currentData.numRound === 'number' ? currentData.numRound : (typeof currentData.roundNumber === 'number' ? currentData.roundNumber : 1);
+        const newRound = previousRound + 1;
+        updateData.numRound = newRound;
+        updateData.roundNumber = newRound;
         
         // Limpiar campos de movimiento de todos los jugadores
         for (let i = 1; i <= Object.values(newDistribution).flat().length; i++) {
