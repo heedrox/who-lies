@@ -218,21 +218,31 @@ async function resetDeadsArray() {
         const totalPlayers = currentData.totalPlayers || params.totalPlayers;
         const assassinNumber = currentData.roles?.ASESINO || null;
 
-        // Elegir objetivo del asesino (distinto del propio asesino)
+        // Elegir objetivo del asesino: debe ser INVITADO/A (ni ASESINO ni COMPLICE)
         let targetAsesino = null;
         if (totalPlayers && assassinNumber) {
-            do {
-                targetAsesino = Math.floor(Math.random() * totalPlayers) + 1;
-            } while (targetAsesino === assassinNumber);
+            const compliceNumbers = Array.isArray(currentData.roles?.COMPLICE) ? currentData.roles.COMPLICE : [];
+            const eligiblePlayers = [];
+            for (let playerNum = 1; playerNum <= totalPlayers; playerNum++) {
+                if (playerNum === assassinNumber) continue;
+                if (compliceNumbers.includes(playerNum)) continue;
+                eligiblePlayers.push(playerNum);
+            }
+            if (eligiblePlayers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
+                targetAsesino = eligiblePlayers[randomIndex];
+            } else {
+                targetAsesino = null;
+            }
         }
-
-        await updateDoc(gameDocRef, {
-            deads: [],
-            numberQuestionsMade: numberQuestionsMade,
-            // Definir el objetivo del asesino para la nueva partida
-            targetAsesino: targetAsesino,
-            lastUpdated: serverTimestamp()
-        });
+		
+		await updateDoc(gameDocRef, {
+			deads: [],
+			numberQuestionsMade: numberQuestionsMade,
+			// Definir el objetivo del asesino para la nueva partida
+			targetAsesino: targetAsesino,
+			lastUpdated: serverTimestamp()
+		});
         
         console.log('✅ Array de muertos y contadores de preguntas reseteados exitosamente');
         if (typeof targetAsesino === 'number') {
