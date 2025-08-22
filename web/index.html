@@ -2901,15 +2901,15 @@
 
         // Diccionario de visibilidad entre habitaciones
         const roomVisibility = {
-            'cocina': ['pasillo_norte', 'comedor'],
-            'pasillo_norte': ['cocina', 'habitacion_principal'],
-            'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
-            'comedor': ['cocina', 'torreon_oeste'],
-            'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
-            'torreon_oeste': ['comedor', 'pasillo_sur'],
-            'pasillo_sur': ['torreon_oeste', 'torreon_este'],
-            'torreon_este': ['pasillo_sur', 'habitacion_invitados']
-        };
+                'cocina': ['pasillo_norte', 'comedor', 'habitacion_principal', 'torreon_oeste'],
+                'pasillo_norte': ['cocina', 'habitacion_principal'],
+                'habitacion_principal': ['pasillo_norte', 'habitacion_invitados', 'cocina', 'torreon_este'],
+                'comedor': ['cocina', 'torreon_oeste'],
+                'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+                'torreon_oeste': ['comedor', 'cocina', 'pasillo_sur', 'torreon_este'],
+                'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+                'torreon_este': ['pasillo_sur', 'habitacion_invitados', 'torreon_oeste', 'habitacion_principal']
+            };
 
         // Mostrar el diccionario de visibilidad en consola para referencia
         console.log('🗺️ Diccionario de visibilidad entre habitaciones:');
