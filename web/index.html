@@ -2383,12 +2383,7 @@
                 
                 // Insertar después del header o de la barra de ronda si existe
                 const header = document.querySelector('.header');
-                const roundProgress = document.getElementById('round-progress');
-                if (roundProgress && roundProgress.parentNode === header.parentNode) {
-                    header.parentNode.insertBefore(indicator, roundProgress.nextSibling);
-                } else {
-                    header.parentNode.insertBefore(indicator, header.nextSibling);
-                }
+                header.parentNode.insertBefore(indicator, header.nextSibling);
             }
             indicator.style.display = 'block';
         }
