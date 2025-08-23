@@ -1448,6 +1448,23 @@
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
+        
+        /* Estilos para información de aciertos del minijuego */
+        .minigame-accuracy-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .accuracy-label {
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
 
         .player-status-text {
             font-size: 0.8rem;
@@ -1479,7 +1496,7 @@
 <body>
     <header class="header">
         <h1>PEDOCIDIO</h1>
-        <div class="subtitle">Donde las pistas huelen raro...</div>
+        <div class="subtitle">Algo huele aquí a podrido...</div>
         <button id="reload-page-btn" class="reload-page-btn" onclick="window.location.reload()" title="Recargar página">🔄</button>
         <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR</button>
     </header>
@@ -1754,114 +1771,182 @@
         }
 
         // Función para generar el diccionario de visibilidad entre jugadores
+        // NUEVA LÓGICA: Solo se puede ver a un jugador si:
+        // 1. Está en línea de visibilidad (roomVisibility)
+        // 2. Se acertó su sonido en el minijuego
+        // NO hay probabilidades aleatorias, solo aciertos reales
         function generatePlayerVisibility(playerDistribution, roles) {
-            const visibility = {};
-            
-            // Para cada jugador, determinar qué otros jugadores puede ver
-            for (let playerNum = 1; playerNum <= Object.values(playerDistribution).flat().length; playerNum++) {
-                const playerRole = determinePlayerRole(playerNum, roles);
-                const visiblePlayers = [];
+            try {
+                console.log('🚨🚨🚨 FUNCIÓN generatePlayerVisibility EJECUTÁNDOSE 🚨🚨🚨');
+                console.log('👁️ Generando visibilidad entre jugadores...');
+                console.log('📊 Parámetros recibidos:', { playerDistribution, roles });
                 
-                if (playerRole === 'ASESINO/A' || playerRole === 'COMPLICE') {
-                    // ASESINO y COMPLICE pueden ver a todos los demás jugadores
-                    for (let otherPlayer = 1; otherPlayer <= Object.values(playerDistribution).flat().length; otherPlayer++) {
-                        if (otherPlayer !== playerNum) {
-                            visiblePlayers.push(otherPlayer);
-                        }
-                    }
-                } else {
-                    // Para jugadores normales, aplicar las reglas de visibilidad por habitación
-                    // Encontrar en qué habitación está el jugador
-                    let playerRoom = null;
-                    for (let room in playerDistribution) {
-                        if (playerDistribution[room].includes(playerNum)) {
-                            playerRoom = room;
-                            break;
-                        }
-                    }
-                    
-                    if (playerRoom) {
-                        // Obtener las habitaciones que puede ver desde su ubicación
-                        const visibleRooms = roomVisibility[playerRoom] || [];
-                        
-                        // Obtener todos los jugadores en las habitaciones visibles
-                        visibleRooms.forEach(room => {
-                            if (playerDistribution[room]) {
-                                visiblePlayers.push(...playerDistribution[room]);
-                            }
-                        });
-                        
-                        // También incluir a los jugadores que están en la misma habitación
-                        if (playerDistribution[playerRoom]) {
-                            visiblePlayers.push(...playerDistribution[playerRoom]);
-                        }
-                        
-                        // Eliminar duplicados y al propio jugador
-                        visiblePlayers.splice(visiblePlayers.indexOf(playerNum), 1);
-                    }
-                }
-                
-                // Para INVITADOS, aplicar porcentaje de acierto del minijuego
-                if (playerRole === 'INVITADO/A') {
-                    const finalVisiblePlayers = [];
-                    
-                    // Obtener porcentaje de acierto del minijuego si está disponible
-                    let accuracyPercentage = 60; // Valor por defecto
-                    
-                    if (window.gameData && window.gameData.soundSelections && window.gameData.movementSounds) {
-                        try {
-                            // Calcular aciertos del jugador en el minijuego
-                            const playerSelections = window.gameData.soundSelections[playerNum] || {};
-                            const movementSounds = window.gameData.movementSounds;
-                            const totalPlayers = Object.keys(movementSounds).length;
-                            
-                            if (Object.keys(playerSelections).length > 0) {
-                                let correctGuesses = 0;
-                                let totalGuesses = 0;
-                                
-                                // Calcular aciertos para cada jugador (excepto a sí mismo)
-                                for (let otherPlayer = 1; otherPlayer <= totalPlayers; otherPlayer++) {
-                                    if (otherPlayer !== playerNum) {
-                                        const actualSound = movementSounds[otherPlayer];
-                                        const guessedSound = playerSelections[otherPlayer];
-                                        
-                                        if (actualSound && guessedSound && actualSound === guessedSound) {
-                                            correctGuesses++;
-                                        }
-                                        totalGuesses++;
-                                    }
-                                }
-                                
-                                if (totalGuesses > 0) {
-                                    accuracyPercentage = Math.round((correctGuesses / totalGuesses) * 100);
-                                    console.log(`🎯 INVITADO ${playerNum}: ${correctGuesses}/${totalGuesses} aciertos = ${accuracyPercentage}%`);
-                                }
-                            }
-                        } catch (error) {
-                            console.error(`❌ Error al calcular aciertos del jugador ${playerNum}:`, error);
-                        }
-                    }
-                    
-                    // Aplicar porcentaje de acierto a la visibilidad
-                    const visibilityThreshold = accuracyPercentage / 100;
-                    visiblePlayers.forEach(playerNum => {
-                        if (Math.random() < visibilityThreshold) {
-                            finalVisiblePlayers.push(playerNum);
-                        }
+                // Verificar si hay datos del minijuego disponibles
+                if (!window.gameData || !window.gameData.soundSelections || !window.gameData.movementSounds) {
+                    console.log('❌ No hay datos del minijuego disponibles, no se puede generar visibilidad');
+                    console.log('📊 Datos disponibles:', {
+                        hasGameData: !!window.gameData,
+                        hasGameData: !!window.gameData,
+                        hasSoundSelections: !!window.gameData?.soundSelections,
+                        hasMovementSounds: !!window.gameData?.movementSounds
                     });
-                    
-                    visibility[playerNum] = finalVisiblePlayers.sort((a, b) => a - b);
-                    console.log(`🎲 INVITADO ${playerNum}: base visible [${visiblePlayers.map(p => `J${p}`).join(', ')}] -> final visible [${finalVisiblePlayers.map(p => `J${p}`).join(', ')}] (${accuracyPercentage}% acierto)`);
-                } else {
-                    // ASESINO y COMPLICE mantienen visibilidad completa
-                    visibility[playerNum] = [...new Set(visiblePlayers)].sort((a, b) => a - b);
+                    return {}; // Retornar visibilidad vacía si no hay datos
                 }
+                
+                const visibility = {};
+                const totalPlayers = Object.keys(roles).length;
+                
+                console.log('✅ Datos del minijuego disponibles, generando visibilidad basada en aciertos reales...');
+                console.log('🔍 Verificando estructura de playerDistribution...');
+                console.log('🔍 playerDistribution completo:', playerDistribution);
+                console.log('🔍 Claves de playerDistribution:', Object.keys(playerDistribution));
+                
+                // Para cada jugador, determinar a quién puede ver
+                for (let playerNum = 1; playerNum <= totalPlayers; playerNum++) {
+                    if (!roles[playerNum]) {
+                        console.log(`⚠️ Jugador ${playerNum} no tiene rol definido, saltando...`);
+                        continue; // Saltar si no hay rol
+                    }
+                    
+                    visibility[playerNum] = [];
+                    console.log(`🎯 Procesando jugador ${playerNum} (${roles[playerNum]})...`);
+                    
+                    // Verificar visibilidad con cada otro jugador
+                    for (let otherPlayerNum = 1; otherPlayerNum <= totalPlayers; otherPlayerNum++) {
+                        if (playerNum === otherPlayerNum) continue; // No verse a sí mismo
+                        if (!roles[otherPlayerNum]) {
+                            console.log(`⚠️ Otro jugador ${otherPlayerNum} no tiene rol definido, saltando...`);
+                            continue; // Saltar si no hay rol
+                        }
+                        
+                        console.log(`🔍 Verificando visibilidad: ${playerNum} (${roles[playerNum]}) vs ${otherPlayerNum} (${roles[otherPlayerNum]})`);
+                        
+                        // Obtener habitaciones de ambos jugadores
+                        let playerRoom = null;
+                        let otherPlayerRoom = null;
+                        
+                        console.log(`🏠 Buscando habitación del jugador ${playerNum}...`);
+                        for (let room in playerDistribution) {
+                            console.log(`🔍 Verificando habitación: ${room} = ${playerDistribution[room]}`);
+                            if (playerDistribution[room] && playerDistribution[room].includes(playerNum)) {
+                                playerRoom = room;
+                                console.log(`✅ Jugador ${playerNum} encontrado en: ${room}`);
+                            }
+                            if (playerDistribution[room] && playerDistribution[room].includes(otherPlayerNum)) {
+                                otherPlayerRoom = room;
+                                console.log(`✅ Otro jugador ${otherPlayerNum} encontrado en: ${room}`);
+                            }
+                        }
+                        
+                        if (!playerRoom || !otherPlayerRoom) {
+                            console.log(`❌ No se pudo determinar habitación: playerRoom=${playerRoom}, otherPlayerRoom=${otherPlayerRoom}`);
+                            continue;
+                        }
+                        
+                        // Determinar si puede ver a este jugador
+                        let canSeeThisPlayer = false;
+                        
+                        // Obtener el rol del jugador actual
+                        const playerRole = roles[playerNum];
+                        
+                        // Para ASESINO y CÓMPLICE: solo verificar aciertos del minijuego (ignorar línea de visibilidad)
+                        if (playerRole === 'ASESINO/A' || playerRole === 'COMPLICE') {
+                            console.log(`👑 ${playerRole} ${playerNum}: verificando solo aciertos del minijuego (ignorando línea de visibilidad)`);
+                            
+                            if (window.gameData.soundSelections[playerNum]) {
+                                try {
+                                    // Verificar si acertó el sonido de este jugador específico
+                                    const playerSelections = window.gameData.soundSelections[playerNum];
+                                    const actualSound = window.gameData.movementSounds[otherPlayerNum];
+                                    const guessedSound = playerSelections[otherPlayerNum];
+                                    
+                                    console.log(`🔍 ${playerRole} ${playerNum} vs ${otherPlayerNum}: Adivinó ${guessedSound}, Era ${actualSound}`);
+                                    
+                                    if (guessedSound && actualSound && guessedSound === actualSound) {
+                                        canSeeThisPlayer = true;
+                                        console.log(`✅ ${playerRole} ${playerNum} ACERTÓ al jugador ${otherPlayerNum} (sonido ${actualSound})`);
+                                    } else {
+                                        console.log(`❌ ${playerRole} ${playerNum} FALLÓ al jugador ${otherPlayerNum} (adivinó ${guessedSound}, era ${actualSound})`);
+                                    }
+                                } catch (error) {
+                                    console.error(`❌ Error al verificar acierto del ${playerRole} ${playerNum} con ${otherPlayerNum}:`, error);
+                                    canSeeThisPlayer = false;
+                                }
+                            } else {
+                                console.log(`❌ ${playerRole} ${playerNum} no tiene selecciones de sonidos, no puede ver a ${otherPlayerNum}`);
+                            }
+                        } else {
+                            // Para INVITADOS: verificar línea de visibilidad Y aciertos del minijuego
+                            console.log(`👤 INVITADO ${playerNum}: verificando línea de visibilidad Y aciertos del minijuego`);
+                            
+                            // Verificar si están en línea de visibilidad
+                            const canSee = window.roomVisibility[playerRoom] && 
+                                          window.roomVisibility[playerRoom].includes(otherPlayerRoom);
+                            
+                            if (canSee) {
+                                // Verificar si acertó a este jugador específico en el minijuego
+                                if (window.gameData.soundSelections[playerNum]) {
+                                    try {
+                                        // Verificar si acertó el sonido de este jugador específico
+                                        const playerSelections = window.gameData.soundSelections[playerNum];
+                                        const actualSound = window.gameData.movementSounds[otherPlayerNum];
+                                        const guessedSound = playerSelections[otherPlayerNum];
+                                        
+                                        console.log(`🔍 INVITADO ${playerNum} vs ${otherPlayerNum}: Adivinó ${guessedSound}, Era ${actualSound}`);
+                                        
+                                        if (guessedSound && actualSound && guessedSound === actualSound) {
+                                            canSeeThisPlayer = true;
+                                            console.log(`✅ INVITADO ${playerNum} ACERTÓ al jugador ${otherPlayerNum} (sonido ${actualSound})`);
+                                        } else {
+                                            console.log(`❌ INVITADO ${playerNum} FALLÓ al jugador ${otherPlayerNum} (adivinó ${guessedSound}, era ${actualSound})`);
+                                        }
+                                    } catch (error) {
+                                        console.error(`❌ Error al verificar acierto del INVITADO ${playerNum} con ${otherPlayerNum}:`, error);
+                                        canSeeThisPlayer = false;
+                                    }
+                                } else {
+                                    console.log(`❌ INVITADO ${playerNum} no tiene selecciones de sonidos, no puede ver a ${otherPlayerNum}`);
+                                }
+                            } else {
+                                console.log(`❌ INVITADO ${playerNum} NO puede ver al jugador ${otherPlayerNum} (no están en línea de visibilidad)`);
+                            }
+                        }
+                        
+                        // Agregar jugador si puede verlo
+                        if (canSeeThisPlayer) {
+                            visibility[playerNum].push(otherPlayerNum);
+                            const roleText = playerRole === 'ASESINO/A' || playerRole === 'COMPLICE' ? playerRole : 'INVITADO';
+                            console.log(`👁️ ${roleText} ${playerNum} puede ver al jugador ${otherPlayerNum} (acertó en minijuego)`);
+                        } else {
+                            const roleText = playerRole === 'ASESINO/A' || playerRole === 'COMPLICE' ? playerRole : 'INVITADO';
+                            console.log(`❌ ${roleText} ${playerNum} NO puede ver al jugador ${otherPlayerNum} (falló en minijuego o no hay datos)`);
+                        }
+                    }
+                }
+                
+                console.log('👁️ Visibilidad generada:', visibility);
+                
+                // Log detallado de qué puede ver cada jugador
+                for (let playerNum = 1; playerNum <= totalPlayers; playerNum++) {
+                    if (visibility[playerNum] && visibility[playerNum].length > 0) {
+                        const role = roles[playerNum];
+                        console.log(`👁️ ${role} ${playerNum} puede ver: [${visibility[playerNum].map(p => `J${p}`).join(', ')}]`);
+                    } else {
+                        const role = roles[playerNum];
+                        console.log(`❌ ${role} ${playerNum} NO puede ver a nadie`);
+                    }
+                }
+                
+                console.log('🚨🚨🚨 RETORNANDO VISIBILIDAD:', visibility);
+                console.log('🚨🚨🚨 TIPO DE VISIBILIDAD:', typeof visibility);
+                console.log('🚨🚨🚨 LONGITUD DE VISIBILIDAD:', Object.keys(visibility).length);
+                
+                return visibility;
+                
+            } catch (error) {
+                console.error('❌ Error al generar visibilidad:', error);
+                return {};
             }
-            
-            console.log('👁️ Diccionario de visibilidad entre jugadores generado (con probabilidad aplicada):');
-            console.log(visibility);
-            
-            return visibility;
         }
 
         // Función para aplicar probabilidad del 60% a la visibilidad de un jugador
@@ -2104,14 +2189,13 @@
                 console.log('🎭 Roles asignados:');
                 console.log(playerRoles);
                 
-                // Generar diccionario de visibilidad entre jugadores
-                console.log('👁️ Generando diccionario de visibilidad...');
-                const playerVisibility = generatePlayerVisibility(playerDistribution, playerRoles);
+                // NO generar visibilidad al inicio (se generará después del minijuego)
+                console.log('👁️ Visibilidad NO generada al inicio (se generará después del minijuego)');
+                const playerVisibility = null; // Se generará cuando se complete el minijuego
                 
-                console.log('👁️ Diccionario de visibilidad generado:');
-                console.log(playerVisibility);
+                console.log('👁️ Visibilidad inicial: null (se calculará con datos reales del minijuego)');
                 
-                // Guardar en Firebase (distribución + roles + visibilidad)
+                // Guardar en Firebase (distribución + roles, sin visibilidad por ahora)
                 await window.FirebaseModular.savePlayerDistribution(params.gameCode, params.totalPlayers, playerDistribution, playerRoles, playerVisibility);
                 
                 console.log('✅ Distribución y roles guardados exitosamente en Firebase');
@@ -2271,6 +2355,8 @@
         }
 
         // Función para manejar actualizaciones del juego en tiempo real
+        // NOTA: El minijuego solo se activa si no está ya activo para evitar resetear la fase actual
+        // IMPORTANTE: Cuando state: "TALKING", se debe desactivar tanto el minijuego como el modo de movimiento
         function handleGameUpdate(gameData) {
             if (!gameData) {
                 console.log('❌ El juego ya no existe');
@@ -2278,6 +2364,14 @@
             }
             
             console.log('🔄 Actualización en tiempo real recibida:', gameData);
+            console.log('🔄 Estado actual del juego:', gameData.state);
+            console.log('📊 Campos importantes del juego:', {
+                state: gameData.state,
+                minigameAccuracy: gameData.minigameAccuracy,
+                soundSelections: gameData.soundSelections,
+                movementSounds: gameData.movementSounds,
+                investigationCompleted: gameData.investigationCompleted
+            });
             
             // Actualizar barra de ronda
             updateRoundProgress(gameData);
@@ -2285,8 +2379,8 @@
             // Actualizar estado de conexión como conectado
             updateConnectionStatus('connected', '🟢 Conectado a Firebase');
             
-            // Verificar si estamos en modo de movimiento
-            if (gameData.endingRound === true) {
+            // Verificar si estamos en modo de movimiento (estado MOVING)
+            if (gameData.state === "MOVING") {
                 console.log('🎯 Modo de movimiento activado');
                 enableMovementMode(gameData);
                 
@@ -2295,17 +2389,33 @@
                     updateMovementList(gameData);
                 }
                 
-                // Verificar si se activó el minijuego de sonidos
-                if (gameData.state === "MOVING" && gameData.movementSounds) {
-                    console.log('🎵 Minijuego de sonidos activado');
-                    activateSoundMinigame();
+                // Verificar si se preparó el minijuego de sonidos
+                if (gameData.movementSounds) {
+                    console.log('🎵 Minijuego de sonidos preparado (esperando SIGUIENTE RONDA)');
+                    // NO activar automáticamente, solo preparar el estado
                 }
                 
-                // Verificar si se completó el minijuego y se cambió a estado TALKING
-                if (gameData.state === "TALKING") {
-                    console.log('🎯 Minijuego completado, estado cambiado a TALKING');
-                    hideSoundMinigame();
+            } else if (gameData.state === "MINIGAME_ACTIVE") {
+                // Verificar si se activó el minijuego de sonidos
+                // Solo activar si no está ya activo o si está en fase inicial
+                const overlay = document.getElementById('sound-minigame-overlay');
+                const isMinigameActive = overlay && overlay.style.display !== 'none';
+                
+                if (!isMinigameActive) {
+                    console.log('🎵 Minijuego de sonidos activado para todos los jugadores');
+                    activateSoundMinigame();
+                } else {
+                    console.log('🎵 Minijuego ya está activo, manteniendo fase actual');
                 }
+                
+            } else if (gameData.state === "TALKING") {
+                // Verificar si se completó el minijuego y se cambió a estado TALKING (estado normal)
+                console.log('🎯 Minijuego completado y ronda finalizada - Estado: TALKING (normal)');
+                console.log('🎮 Ocultando minijuego y desactivando modo de movimiento...');
+                hideSoundMinigame();
+                disableMovementMode(); // Desactivar modo de movimiento
+                console.log('✅ Modo de movimiento desactivado');
+                
             } else {
                 console.log('🎮 Modo normal del juego');
                 disableMovementMode();
@@ -2374,7 +2484,7 @@
             // Mostrar botón "ANOTAR PREGUNTA" solo cuando no esté en modo de movimiento
             const addQuestionBtn = document.querySelector('.add-question-btn');
             if (addQuestionBtn) {
-                if (!gameData.endingRound) {
+                if (gameData.state !== "MOVING") {
                     addQuestionBtn.style.display = 'inline';
                 } else {
                     addQuestionBtn.style.display = 'none';
@@ -2752,6 +2862,7 @@
         // Función para deshabilitar el modo de movimiento
         function disableMovementMode() {
             console.log('🎮 Deshabilitando modo de movimiento...');
+            console.log('🎮 Estado actual del juego:', window.gameData?.state);
             
             // Restaurar botón "TERMINAR RONDA" solo para jugador 1
             const endRoundBtn = document.querySelector('.end-round-btn');
@@ -3067,15 +3178,73 @@
                     const { db } = window.FirebaseModular.getFirebaseServices();
                     const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
                     
-                    await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
-                        state: null,
+                    // CALCULAR ACCURACY ANTES DE LIMPIAR LOS DATOS
+                    console.log('🎯 Calculando accuracy del minijuego antes de limpiar...');
+                    console.log('📊 Datos disponibles para cálculo:', {
+                        soundSelections: gameData.soundSelections,
+                        movementSounds: gameData.movementSounds,
+                        totalPlayers: window.gameParams.totalPlayers
+                    });
+                    
+                    const minigameAccuracy = {};
+                    
+                    if (gameData.soundSelections && gameData.movementSounds) {
+                        console.log('✅ Datos del minijuego disponibles, calculando accuracy...');
+                        
+                        for (let playerNum = 1; playerNum <= window.gameParams.totalPlayers; playerNum++) {
+                            const playerSelections = gameData.soundSelections[playerNum];
+                            console.log(`🎵 Jugador ${playerNum} - Selecciones:`, playerSelections);
+                            
+                            if (playerSelections) {
+                                let correctGuesses = 0;
+                                let totalGuesses = 0;
+                                
+                                // Calcular aciertos para todos los jugadores (incluyendo a sí mismo)
+                                for (let otherPlayer = 1; otherPlayer <= window.gameParams.totalPlayers; otherPlayer++) {
+                                    const actualSound = gameData.movementSounds[otherPlayer];
+                                    const guessedSound = playerSelections[otherPlayer];
+                                    
+                                    console.log(`🔍 Comparando: Jugador ${otherPlayer} - Sonido real: ${actualSound}, Adivinado: ${guessedSound}`);
+                                    
+                                    if (actualSound && guessedSound && actualSound === guessedSound) {
+                                        correctGuesses++;
+                                        console.log(`✅ Acierto para jugador ${otherPlayer}`);
+                                    }
+                                    totalGuesses++;
+                                }
+                                
+                                if (totalGuesses > 0) {
+                                    const accuracyPercentage = Math.round((correctGuesses / totalGuesses) * 100);
+                                    minigameAccuracy[playerNum] = accuracyPercentage;
+                                    console.log(`🎯 Jugador ${playerNum}: ${correctGuesses}/${totalGuesses} aciertos = ${accuracyPercentage}%`);
+                                }
+                            } else {
+                                console.log(`⚠️ Jugador ${playerNum} no tiene selecciones de sonidos`);
+                            }
+                        }
+                    } else {
+                        console.log('❌ Datos del minijuego no disponibles para calcular accuracy');
+                        console.log('soundSelections:', gameData.soundSelections);
+                        console.log('movementSounds:', gameData.movementSounds);
+                    }
+                    
+                    console.log('📊 Accuracy calculado:', minigameAccuracy);
+                    
+                    // Guardar accuracy y limpiar datos del minijuego
+                    const updateData = {
+                        state: "TALKING",
+                        minigameAccuracy: minigameAccuracy, // Guardar accuracy calculado
                         movementSounds: null,
                         soundSelections: null,
                         investigationCompleted: null,
                         lastUpdated: serverTimestamp()
-                    });
+                    };
                     
-                    console.log('🎵 Estado del minijuego limpiado');
+                    console.log('💾 Guardando en Firebase:', updateData);
+                    
+                    await updateDoc(doc(db, 'games', window.gameParams.gameCode), updateData);
+                    
+                    console.log('🎵 Estado del minijuego limpiado, accuracy guardado:', minigameAccuracy);
                     
                     // Ocultar el overlay del minijuego si está visible
                     hideSoundMinigame();
@@ -3304,6 +3473,37 @@
             }
             
             playersStatusHTML += '</div>';
+            
+            // Agregar información de aciertos del minijuego si está disponible (solo en fase TALKING)
+            console.log('🔍 Debug showDeadsInfo - Estado del juego:', {
+                state: window.gameData?.state,
+                hasMinigameAccuracy: !!window.gameData?.minigameAccuracy,
+                currentPlayerAccuracy: window.gameData?.minigameAccuracy?.[window.gameParams?.playerNumber],
+                totalPlayers: totalPlayers
+            });
+            
+            if (window.gameData && window.gameData.state === 'TALKING' && 
+                window.gameData.minigameAccuracy && 
+                window.gameData.minigameAccuracy[window.gameParams?.playerNumber] !== undefined) {
+                
+                console.log('✅ Condiciones cumplidas para mostrar accuracy del minijuego');
+                
+                const playerNumber = window.gameParams.playerNumber;
+                const accuracyPercentage = window.gameData.minigameAccuracy[playerNumber];
+                const totalPlayers = window.gameParams.totalPlayers;
+                const correctGuesses = Math.round((accuracyPercentage / 100) * totalPlayers);
+                
+                playersStatusHTML += `
+                    <div class="minigame-accuracy-info">
+                        <span class="accuracy-label">🎯 Acertaste ${correctGuesses} de ${totalPlayers} sonidos (${accuracyPercentage}%)</span>
+                    </div>
+                `;
+                console.log(`🎯 Jugador ${playerNumber}: ${correctGuesses}/${totalPlayers} aciertos = ${accuracyPercentage}%`);
+                
+            } else {
+                console.log('❌ No se muestran aciertos del minijuego - Condiciones no cumplidas');
+            }
+            
             playersStatusContainer.innerHTML = playersStatusHTML;
             playersStatusContainer.style.display = 'block';
             
@@ -3332,8 +3532,8 @@
             return displayName;
         }
 
-        // Diccionario de visibilidad entre habitaciones
-        const roomVisibility = {
+        // Diccionario de visibilidad entre habitaciones (GLOBAL)
+        window.roomVisibility = {
                 'cocina': ['pasillo_norte', 'comedor', 'habitacion_principal', 'torreon_oeste'],
                 'pasillo_norte': ['cocina', 'habitacion_principal'],
                 'habitacion_principal': ['pasillo_norte', 'habitacion_invitados', 'cocina', 'torreon_este'],
@@ -3474,6 +3674,11 @@
             }
         }
 
+        // Función para manejar el botón de ronda
+        // FLUJO CORRECTO:
+        // 1. "TERMINAR RONDA" → state: "MOVING" (modo de movimiento + minijuego preparado)
+        // 2. "SIGUIENTE RONDA" → state: "MINIGAME_ACTIVE" (se activa el minijuego)
+        // 3. CONTINUAR INVESTIGACION → state: "TALKING" (finaliza ronda + calcula visibilidad)
         async function endRound() {
             // Solo el jugador 1 puede terminar la ronda
             if (!window.gameParams || window.gameParams.playerNumber !== 1) {
@@ -3493,13 +3698,24 @@
                     alert('Error al terminar la ronda. Por favor, intenta de nuevo.');
                 }
             } else if (buttonText === 'SIGUIENTE RONDA') {
-                // Finalizar la ronda y avanzar
+                // Activar minijuego de sonidos para todos los jugadores
                 try {
-                    console.log('🎯 Avanzando a la siguiente ronda...');
-                    await finalizeRoundAndRecalculate();
+                    console.log('🎵 Activando minijuego de sonidos para todos...');
+                    
+                    // Cambiar estado en Firebase para que todos los jugadores vean el minijuego
+                    const { db } = window.FirebaseModular.getFirebaseServices();
+                    const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
+                    
+                    await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
+                        state: "MINIGAME_ACTIVE",
+                        lastUpdated: serverTimestamp()
+                    });
+                    
+                    console.log('🎯 Estado cambiado a MINIGAME_ACTIVE para sincronizar con todos los jugadores');
+                    
                 } catch (error) {
-                    console.error('❌ Error al avanzar ronda:', error);
-                    alert('Error al avanzar a la siguiente ronda. Por favor, intenta de nuevo.');
+                    console.error('❌ Error al activar minijuego:', error);
+                    alert('Error al activar el minijuego. Por favor, intenta de nuevo.');
                 }
             }
         }
@@ -3553,7 +3769,7 @@
                         const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
                         
                         await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
-                            state: null,
+                            state: "TALKING",
                             movementSounds: null,
                             soundSelections: null,
                             investigationCompleted: null,
@@ -3589,9 +3805,12 @@
         // ===== FUNCIONES DEL MINIJUEGO DE SONIDOS =====
 
         // Función para activar el minijuego de sonidos
-        async function activateSoundMinigame() {
+        async function activateSoundMinigame(forceReset = false) {
             try {
                 console.log('🎵 Activando minijuego de sonidos...');
+                console.log('🔍 Verificando datos del minijuego...');
+                console.log('🔍 window.gameData:', window.gameData);
+                console.log('🔍 movementSounds:', window.gameData?.movementSounds);
                 
                 // Mostrar overlay del minijuego
                 const overlay = document.getElementById('sound-minigame-overlay');
@@ -3599,8 +3818,13 @@
                     overlay.style.display = 'flex';
                 }
                 
-                // Mostrar fase inicial (MOVERSE)
-                showMinigamePhase('move-phase');
+                // Solo resetear a fase inicial si se fuerza o si no hay fase activa
+                if (forceReset || !window.currentMinigamePhase) {
+                    // Mostrar fase inicial (MOVERSE)
+                    showMinigamePhase('move-phase');
+                } else {
+                    console.log('🎵 Manteniendo fase actual del minijuego:', window.currentMinigamePhase);
+                }
                 
             } catch (error) {
                 console.error('❌ Error al activar minijuego:', error);
@@ -3623,7 +3847,8 @@
                     window.tempSoundSelections = {};
                 }
                 
-                // Resetear fases del minijuego
+                // Resetear fases del minijuego y limpiar fase actual
+                window.currentMinigamePhase = null;
                 showMinigamePhase('move-phase');
                 
                 console.log('🎵 Minijuego de sonidos ocultado');
@@ -3634,6 +3859,9 @@
 
         // Función para mostrar una fase específica del minijuego
         function showMinigamePhase(phaseId) {
+            // Guardar la fase actual globalmente
+            window.currentMinigamePhase = phaseId;
+            
             // Ocultar todas las fases
             const phases = document.querySelectorAll('.minigame-phase');
             phases.forEach(phase => {
@@ -3645,6 +3873,8 @@
             if (targetPhase) {
                 targetPhase.style.display = 'block';
             }
+            
+            console.log(`🎵 Fase del minijuego cambiada a: ${phaseId}`);
         }
 
         // Función para iniciar la fase de movimiento
@@ -3687,10 +3917,14 @@
         async function playMovementSounds() {
             try {
                 console.log('🎵 Reproduciendo sonidos de movimiento...');
+                console.log('🔍 Datos del juego disponibles:', window.gameData);
+                console.log('🔍 Sonidos de movimiento:', window.gameData?.movementSounds);
                 
                 // Obtener el sonido asignado al jugador actual
                 if (!window.gameData || !window.gameData.movementSounds) {
                     console.error('❌ No hay datos de sonidos disponibles');
+                    console.error('❌ window.gameData:', window.gameData);
+                    console.error('❌ movementSounds:', window.gameData?.movementSounds);
                     return;
                 }
                 
@@ -3798,6 +4032,7 @@
                 if (continueBtn) {
                     if (window.gameParams && window.gameParams.playerNumber === 1) {
                         continueBtn.style.display = 'block';
+                        continueBtn.classList.add('continue-investigation-btn');
                     } else {
                         continueBtn.style.display = 'none';
                     }
@@ -3812,7 +4047,7 @@
         }
 
         // Función para seleccionar sonido para un jugador específico
-        function selectSoundForPlayer(playerNum, soundNum) {
+        async function selectSoundForPlayer(playerNum, soundNum) {
             try {
                 // Obtener el contenedor del jugador
                 const playerItem = document.querySelector(`[data-player="${playerNum}"]`);
@@ -3840,6 +4075,9 @@
                     
                     console.log(`🎵 Sonido ${soundNum} deseleccionado para jugador ${playerNum}`);
                     
+                    // Guardar deselección en Firebase
+                    await saveSoundSelectionToFirebase(playerNum, null);
+                    
                     // Actualizar indicador de progreso
                     updateSelectionProgress();
                     return;
@@ -3864,6 +4102,9 @@
                 
                 console.log(`🎵 Sonido ${soundNum} seleccionado para jugador ${playerNum}`);
                 
+                // Guardar selección en Firebase
+                await saveSoundSelectionToFirebase(playerNum, soundNum);
+                
                 // Actualizar indicador de progreso
                 updateSelectionProgress();
                 
@@ -3872,6 +4113,57 @@
             }
         }
 
+        // Función para guardar selección de sonido en Firebase en tiempo real
+        // Se ejecuta cada vez que se selecciona/deselecciona un sonido
+        async function saveSoundSelectionToFirebase(playerNum, soundNum) {
+            try {
+                if (!window.gameParams) {
+                    console.error('❌ Parámetros del juego no disponibles');
+                    return;
+                }
+                
+                const { db } = window.FirebaseModular.getFirebaseServices();
+                const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
+                
+                // Crear objeto de selección para este jugador
+                const soundSelection = {};
+                soundSelection[`soundSelections.${window.gameParams.playerNumber}.${playerNum}`] = soundNum;
+                
+                // Solo marcar como completado si todos los sonidos están seleccionados
+                const allSelectionsComplete = checkAllSelectionsComplete();
+                if (allSelectionsComplete) {
+                    soundSelection[`investigationCompleted.${window.gameParams.playerNumber}`] = true;
+                }
+                
+                // Actualizar Firebase
+                await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
+                    ...soundSelection,
+                    lastUpdated: serverTimestamp()
+                });
+                
+                console.log(`🎵 Sonido ${soundNum || 'deseleccionado'} para jugador ${playerNum} guardado en Firebase`);
+                
+            } catch (error) {
+                console.error('❌ Error al guardar selección en Firebase:', error);
+            }
+        }
+        
+        // Función para verificar si todas las selecciones están completas
+        function checkAllSelectionsComplete() {
+            if (!window.tempSoundSelections || !window.gameParams) {
+                return false;
+            }
+            
+            const totalPlayers = window.gameParams.totalPlayers;
+            for (let i = 1; i <= totalPlayers; i++) {
+                if (!window.tempSoundSelections[i]) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
         // Función para continuar con la investigación
         async function continueInvestigation() {
             try {
@@ -3898,29 +4190,134 @@
                     return;
                 }
                 
-                // Guardar selecciones en Firebase
-                await window.FirebaseModular.saveSoundSelection(
-                    window.gameParams.gameCode,
-                    playerNumber,
-                    window.tempSoundSelections
-                );
+                // Las selecciones ya están guardadas en Firebase, solo verificar que estén completas
+                if (!checkAllSelectionsComplete()) {
+                    alert('Por favor, asegúrate de que todas las selecciones estén completas.');
+                    return;
+                }
                 
-                console.log('✅ Selecciones guardadas en Firebase');
+                console.log('✅ Todas las selecciones están completas y guardadas en Firebase');
                 
-                // Si es el jugador 1, cambiar el estado del juego a "TALKING"
+                // Si es el jugador 1, finalizar la ronda completamente
                 if (window.gameParams.playerNumber === 1) {
                     try {
+                        console.log('🎯 Jugador 1 finalizando ronda después del minijuego...');
+                        
+                        // Crear nueva distribución basada en los movimientos
+                        const newDistribution = await calculateNewDistribution();
+                        
+                        // Generar nueva visibilidad basada en aciertos del minijuego (AHORA SÍ hay datos)
+                        console.log('👁️ Generando visibilidad basada en datos reales del minijuego...');
+                        console.log('📊 Datos del minijuego disponibles para generar visibilidad:', {
+                            soundSelections: window.gameData.soundSelections,
+                            movementSounds: window.gameData.movementSounds,
+                            roles: window.gameData.roles,
+                            newDistribution: newDistribution
+                        });
+                        
+                        // CONVERTIR estructura de roles a formato correcto
+                        console.log('🔄 Convirtiendo estructura de roles...');
+                        const convertedRoles = {};
+                        const totalPlayers = window.gameParams.totalPlayers;
+                        
+                        for (let playerNum = 1; playerNum <= totalPlayers; playerNum++) {
+                            if (window.gameData.roles.ASESINO === playerNum) {
+                                convertedRoles[playerNum] = 'ASESINO/A';
+                            } else if (window.gameData.roles.COMPLICE && window.gameData.roles.COMPLICE.includes(playerNum)) {
+                                convertedRoles[playerNum] = 'COMPLICE';
+                            } else {
+                                convertedRoles[playerNum] = 'INVITADO/A';
+                            }
+                        }
+                        
+                        console.log('✅ Roles convertidos:', convertedRoles);
+                        
+                        console.log('🚨🚨🚨 LLAMANDO A generatePlayerVisibility...');
+                        const newVisibility = generatePlayerVisibility(newDistribution, convertedRoles);
+                        console.log('🚨🚨🚨 RESULTADO DE generatePlayerVisibility:', newVisibility);
+                        console.log('🚨🚨🚨 TIPO DEL RESULTADO:', typeof newVisibility);
+                        console.log('🚨🚨🚨 LONGITUD DEL RESULTADO:', Object.keys(newVisibility).length);
+                        console.log('👁️ Nueva visibilidad generada:', newVisibility);
+                        
+                        // Finalizar la ronda en Firebase
+                        await window.FirebaseModular.finalizeRound(window.gameParams.gameCode, newDistribution, newVisibility);
+                        
+                        // CALCULAR ACCURACY ANTES DE LIMPIAR LOS DATOS
+                        console.log('🎯 Calculando accuracy del minijuego antes de limpiar...');
+                        console.log('📊 Datos disponibles para cálculo:', {
+                            soundSelections: window.gameData.soundSelections,
+                            movementSounds: window.gameData.movementSounds,
+                            totalPlayers: window.gameParams.totalPlayers
+                        });
+                        
+                        const minigameAccuracy = {};
+                        
+                        if (window.gameData.soundSelections && window.gameData.movementSounds) {
+                            console.log('✅ Datos del minijuego disponibles, calculando accuracy...');
+                            
+                            for (let playerNum = 1; playerNum <= window.gameParams.totalPlayers; playerNum++) {
+                                const playerSelections = window.gameData.soundSelections[playerNum];
+                                console.log(`🎵 Jugador ${playerNum} - Selecciones:`, playerSelections);
+                                
+                                if (playerSelections) {
+                                    let correctGuesses = 0;
+                                    let totalGuesses = 0;
+                                    
+                                    // Calcular aciertos para todos los jugadores (incluyendo a sí mismo)
+                                    for (let otherPlayer = 1; otherPlayer <= window.gameParams.totalPlayers; otherPlayer++) {
+                                        const actualSound = window.gameData.movementSounds[otherPlayer];
+                                        const guessedSound = playerSelections[otherPlayer];
+                                        
+                                        console.log(`🔍 Comparando: Jugador ${otherPlayer} - Sonido real: ${actualSound}, Adivinado: ${guessedSound}`);
+                                        
+                                        if (actualSound && guessedSound && actualSound === guessedSound) {
+                                            correctGuesses++;
+                                            console.log(`✅ Acierto para jugador ${otherPlayer}`);
+                                        }
+                                        totalGuesses++;
+                                    }
+                                    
+                                    if (totalGuesses > 0) {
+                                        const accuracyPercentage = Math.round((correctGuesses / totalGuesses) * 100);
+                                        minigameAccuracy[playerNum] = accuracyPercentage;
+                                        console.log(`🎯 Jugador ${playerNum}: ${correctGuesses}/${totalGuesses} aciertos = ${accuracyPercentage}%`);
+                                    }
+                                } else {
+                                    console.log(`⚠️ Jugador ${playerNum} no tiene selecciones de sonidos`);
+                                }
+                            }
+                        } else {
+                            console.log('❌ Datos del minijuego no disponibles para calcular accuracy');
+                            console.log('soundSelections:', window.gameData.soundSelections);
+                            console.log('movementSounds:', window.gameData.movementSounds);
+                        }
+                        
+                        console.log('📊 Accuracy calculado:', minigameAccuracy);
+                        
+                        // Limpiar estado del minijuego y modo de movimiento
                         const { db } = window.FirebaseModular.getFirebaseServices();
                         const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
                         
-                        await updateDoc(doc(db, 'games', window.gameParams.gameCode), {
+                        const updateData = {
                             state: "TALKING",
+                            minigameAccuracy: minigameAccuracy, // Guardar accuracy calculado
+                            movementSounds: null,
+                            soundSelections: null,
+                            investigationCompleted: null,
                             lastUpdated: serverTimestamp()
-                        });
+                        };
                         
-                        console.log('🎯 Estado del juego cambiado a TALKING');
+                        console.log('💾 Guardando en Firebase:', updateData);
+                        
+                        await updateDoc(doc(db, 'games', window.gameParams.gameCode), updateData);
+                        
+                        console.log('🎵 Estado del minijuego y modo de movimiento limpiados, accuracy guardado:', minigameAccuracy);
+                        console.log('✅ Ronda finalizada exitosamente con nueva visibilidad basada en aciertos');
+                        console.log('🎯 Estado cambiado a TALKING en Firebase, esperando sincronización...');
+                        console.log('🔄 En 2 segundos se debería ocultar el modo de movimiento automáticamente');
+                        
                     } catch (error) {
-                        console.error('❌ Error al cambiar estado del juego:', error);
+                        console.error('❌ Error al finalizar ronda:', error);
                     }
                 }
                 
@@ -3941,6 +4338,16 @@
             try {
                 console.log('🎵 Verificando si todos han completado...');
                 
+                // Si es el jugador 1, ya finalizó la ronda, solo esperar un momento
+                if (window.gameParams.playerNumber === 1) {
+                    console.log('🎯 Jugador 1 ya finalizó la ronda, esperando sincronización...');
+                    setTimeout(() => {
+                        hideSoundMinigame();
+                    }, 1000);
+                    return;
+                }
+                
+                // Para otros jugadores, verificar si todos han completado
                 const checkInterval = setInterval(async () => {
                     try {
                         const allCompleted = await window.FirebaseModular.checkAllPlayersInvestigated(
@@ -3953,12 +4360,6 @@
                             
                             // Ocultar overlay del minijuego
                             hideSoundMinigame();
-                            
-                            // Si es el jugador 1, puede continuar con la ronda
-                            if (window.gameParams.playerNumber === 1) {
-                                console.log('🎯 Jugador 1 puede continuar con la ronda');
-                                // El botón "SIGUIENTE RONDA" ya estará habilitado
-                            }
                             
                         }
                     } catch (error) {
@@ -3983,33 +4384,72 @@
         }
 
         // Función para actualizar el indicador de progreso de selección
-        function updateSelectionProgress() {
+        async function updateSelectionProgress() {
             try {
-                if (!window.gameParams || !window.tempSoundSelections) {
+                if (!window.gameParams) {
                     return;
                 }
                 
                 const totalPlayers = window.gameParams.totalPlayers;
-                const selectedCount = Object.keys(window.tempSoundSelections).length;
                 
+                // Obtener progreso actual desde Firebase
+                const currentProgress = await getCurrentInvestigationProgress();
+                
+                // Actualizar indicador visual local
                 const progressElement = document.getElementById('selection-progress');
                 const selectedCountElement = document.getElementById('selected-count');
                 const totalCountElement = document.getElementById('total-count');
                 
                 if (progressElement && selectedCountElement && totalCountElement) {
-                    selectedCountElement.textContent = selectedCount;
+                    selectedCountElement.textContent = currentProgress.completedCount;
                     totalCountElement.textContent = totalPlayers;
-                    
-                    // Mostrar progreso solo si hay selecciones
-                    if (selectedCount > 0) {
-                        progressElement.style.display = 'block';
-                    } else {
-                        progressElement.style.display = 'none';
+                    progressElement.style.display = 'block';
+                }
+                
+                // Actualizar botón "CONTINUAR INVESTIGACION" con progreso
+                updateContinueButtonProgress(currentProgress.completedCount, totalPlayers);
+                
+                console.log(`📊 Progreso de investigación: ${currentProgress.completedCount}/${totalPlayers} jugadores completados`);
+                
+            } catch (error) {
+                console.error('❌ Error al actualizar progreso:', error);
+            }
+        }
+        
+        // Función para obtener el progreso actual de la investigación desde Firebase
+        async function getCurrentInvestigationProgress() {
+            try {
+                if (!window.gameData || !window.gameData.investigationCompleted) {
+                    return { completedCount: 0, totalPlayers: window.gameParams?.totalPlayers || 0 };
+                }
+                
+                let completedCount = 0;
+                const investigationCompleted = window.gameData.investigationCompleted;
+                
+                // Contar cuántos jugadores han completado la investigación
+                for (let playerNum in investigationCompleted) {
+                    if (investigationCompleted[playerNum] === true) {
+                        completedCount++;
                     }
                 }
                 
+                return { completedCount, totalPlayers: window.gameParams?.totalPlayers || 0 };
+                
             } catch (error) {
-                console.error('❌ Error al actualizar progreso de selección:', error);
+                console.error('❌ Error al obtener progreso:', error);
+                return { completedCount: 0, totalPlayers: window.gameParams?.totalPlayers || 0 };
+            }
+        }
+        
+        // Función para actualizar el botón "CONTINUAR INVESTIGACION" con el progreso
+        function updateContinueButtonProgress(completedCount, totalPlayers) {
+            try {
+                const continueBtn = document.querySelector('.continue-investigation-btn');
+                if (continueBtn) {
+                    continueBtn.textContent = `CONTINUAR INVESTIGACION (${completedCount}/${totalPlayers})`;
+                }
+            } catch (error) {
+                console.error('❌ Error al actualizar botón de progreso:', error);
             }
         }
 
