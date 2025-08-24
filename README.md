@@ -4,7 +4,7 @@ Un juego de misterio tipo Cluedo donde debes triangular información para descub
 
 ## 🎯 ¿Qué es WHO LIES?
 
-**WHO LIES** es un juego de misterio y deducción donde los jugadores deben triangular información para descubrir quién es el asesino. El juego se desarrolla en un entorno de "murder mystery" similar a Cluedo, pero con un enfoque en la triangulación de pistas y la lógica deductiva.
+**WHO LIES** (también conocido como **PEDOCIDIO**) es un juego de misterio y deducción donde los jugadores deben triangular información para descubrir quién es el asesino. El juego se desarrolla en un entorno de "murder mystery" similar a Cluedo, pero con un enfoque en la triangulación de pistas y la lógica deductiva.
 
 ### 🎮 Concepto del juego
 - **Objetivo**: Descubrir al asesino mediante la triangulación de información
@@ -131,6 +131,7 @@ Este proyecto nació de una conversación de desarrollo donde se conceptualizó 
 - **Layout**: Cuadrícula 3x3 para las estancias, fácil de entender en móvil
 - **Responsive**: Optimizado para pantallas verticales de dispositivos móviles
 - **Tipografía**: Fuente Georgia para dar un toque clásico y elegante
+- **Subtítulo del juego**: "Cuando los invitados huelen a podrido..." - Referencia temática al misterio
 
 ### 🔧 Evolución técnica
 1. **Interfaz básica**: HTML simple con estancias
@@ -253,6 +254,8 @@ La nueva funcionalidad se ejecuta automáticamente cuando:
 - **Backend**: Firebase 12.1.0 (Authentication, Firestore) - **ACTUALIZADO**
 - **Autenticación**: Sistema de login anónimo con gestión de sesiones
 - **Arquitectura Firebase**: Patrón modular con singleton, caché persistente y soporte multi-tab
+- **Sistema de audio**: Reproducción de sonidos MP3 en navegador para minijuegos interactivos
+- **Minijuegos interactivos**: Sistema de fases y estados del juego con sincronización en tiempo real
 
 ## 📁 Estructura del proyecto
 
@@ -312,6 +315,13 @@ who-lies/
 - **Sincronización en tiempo real** - Los contadores se actualizan automáticamente entre todos los jugadores
 - **Persistencia de datos** - Los contadores se mantienen al recargar la página y se almacenan en Firebase
 - **Reset automático** - Los contadores se reinician a cero al reiniciar el juego
+- **🎵 Sistema de minijuego de sonidos** - Nueva mecánica que reemplaza la probabilidad fija del 60% por un sistema basado en habilidad
+- **🎯 5 fases del minijuego** - MOVERSE → PREPÁRATE → INVESTIGACIÓN → SELECCIÓN DE SONIDOS → ESPERANDO
+- **🎵 Cálculo de visibilidad basado en habilidad** - Sistema de accuracy personalizado por jugador que determina la visibilidad
+- **🔊 Sistema de audio integrado** - 3 sonidos diferentes (sound-1.mp3, sound-2.mp3, sound-3.mp3) para identificación de movimientos
+- **🎮 Interfaz de selección de sonidos** - Sistema de investigación donde cada jugador debe identificar qué sonido escuchó de cada otro jugador
+- **📊 Sistema de accuracy en tiempo real** - Porcentaje de aciertos que se calcula automáticamente y se almacena en Firebase
+- **🔄 Flujo de minijuego integrado** - Activación automática después del movimiento, sincronización entre todos los jugadores
 
 ## 🔧 Configuración del entorno
 
@@ -524,6 +534,11 @@ El juego utiliza parámetros de URL para identificar jugadores:
 
 ### 🎯 Sistema de Rondas y Movimiento
 - **Control de rondas**: Solo el jugador 1 puede activar el modo de movimiento
+- **Estados del juego**: Sistema de 4 estados que controlan el flujo del juego:
+  - **TALKING**: Modo normal donde los jugadores discuten y comparten información
+  - **MOVING**: Cuando el jugador 1 pulsa "TERMINAR RONDA", los jugadores seleccionan su próxima ubicación
+  - **MINIGAME_ACTIVE**: Cuando todos han movido y el jugador 1 pulsa "SIGUIENTE RONDA", se activa el minijuego de sonidos
+  - **TALKING**: Vuelta al modo normal después de completar el minijuego
 - **Modo de movimiento**: Interfaz especial que permite a los jugadores seleccionar su próxima ubicación
 - **Restricciones de movimiento**: Los jugadores normales pueden moverse a habitaciones contiguas o quedarse en la misma ubicación
 - **Movimiento libre del ASESINO**: El ASESINO puede moverse a cualquier habitación sin restricciones
@@ -534,6 +549,21 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - **Botón inteligente**: Cambia de "TERMINAR RONDA" a "SIGUIENTE RONDA" según el estado
 - **Finalización automática**: La ronda se finaliza automáticamente cuando todos han movido
 - **Recálculo de visibilidad**: Nueva distribución y visibilidad se calculan automáticamente al finalizar
+
+### 🎵 Sistema de Minijuego de Sonidos
+- **Activación automática**: Se activa cuando el jugador 1 pulsa "SIGUIENTE RONDA" después del movimiento
+- **5 fases del minijuego**:
+  1. **MOVERSE**: Pantalla con botón "MOVERSE" y texto "CONTENED LA RESPIRACION - Pulsad 'MOVER' a la vez"
+  2. **PREPÁRATE**: Contador regresivo 5-4-3-2-1-0 con texto "Los movimientos ocurrirán en..."
+  3. **INVESTIGACIÓN**: Botón "INVESTIGAR" con texto "¿Qué movimiento escuchaste de cada jugador?"
+  4. **SELECCIÓN DE SONIDOS**: Interfaz para seleccionar qué sonido escuchó cada jugador (SONIDO 1, 2 o 3)
+  5. **ESPERANDO**: Pantalla de espera hasta que todos completen la investigación
+- **Sistema de sonidos**: 3 sonidos diferentes asignados aleatoriamente a cada jugador
+- **Botones de referencia**: Permiten escuchar cada sonido antes de hacer la selección
+- **Cálculo de accuracy**: Porcentaje de aciertos que reemplaza la probabilidad fija del 60%
+- **Integración con visibilidad**: La visibilidad se calcula basándose en el accuracy personalizado de cada jugador
+- **Sincronización**: Todos los jugadores deben completar la investigación antes de continuar
+- **Persistencia**: Los datos de accuracy se almacenan en Firebase para referencia futura
 
 ### 🔪 Mecánica de Asesinato Optimizada
 - **Flujo unificado**: Selección de víctima y movimiento se ejecutan en un solo paso
@@ -609,6 +639,7 @@ El juego utiliza parámetros de URL para identificar jugadores:
 - [x] **Sistema de caché persistente y multi-tab** - Soporte para múltiples pestañas con sincronización automática
 - [x] **Arquitectura Firebase "a prueba de bombas"** - Implementación del patrón recomendado por GPT5 para evitar errores de reconexión
 - [x] **Sistema de anotación de preguntas** - Botón "ANOTAR PREGUNTA" para contabilizar preguntas de cada jugador con visualización de palos "I" debajo de avatares
+- [x] **🎵 Sistema de minijuego de sonidos** - Nueva mecánica que reemplaza la probabilidad fija del 60% por un sistema basado en habilidad con 5 fases y cálculo de accuracy personalizado
 - [ ] **Base de datos de pistas** - Sistema de pistas dinámicas y aleatorias
 - [x] **Modo multijugador** - Sincronización en tiempo real entre jugadores
 - [ ] **Sistema de puntuación** - Métricas de resolución y tiempo
