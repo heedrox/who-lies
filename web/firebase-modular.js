@@ -160,6 +160,7 @@ async function startRoundEnding(gameCode) {
         }
 
         await updateDoc(doc(db, 'games', gameCode), {
+            endingRound: true,
             state: "MOVING",
             movementSounds: movementSounds,
             soundSelections: soundSelections,
@@ -167,12 +168,8 @@ async function startRoundEnding(gameCode) {
             lastUpdated: serverTimestamp()
         });
         
-        console.log('✅ Ronda terminada, modo de movimiento activado');
-        console.log('🎵 Sonidos asignados (preparados para minijuego):', movementSounds);
-        console.log('📝 Los jugadores ahora deben seleccionar su movimiento, luego se activará el minijuego');
-        console.log('🔄 Estados del juego: TALKING (normal) -> MOVING (movimiento) -> MINIGAME_ACTIVE (minijuego) -> TALKING (finalizado)');
-        console.log('🎯 Interfaz de movimiento activada automáticamente para todos los jugadores');
-        console.log('🎮 FLUJO: MOVERSE → SIGUIENTE RONDA → MINIJUEGO → INVESTIGAR → CONTINUAR → TALKING');
+        console.log('✅ Ronda terminada, modo de movimiento activado con minijuego de sonidos');
+        console.log('🎵 Sonidos asignados:', movementSounds);
         return true;
     } catch (error) {
         console.error('❌ Error al terminar la ronda:', error);
