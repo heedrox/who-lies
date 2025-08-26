@@ -1496,7 +1496,7 @@
 <body>
     <header class="header">
         <h1>PEDOCIDIO</h1>
-        <div class="subtitle">Cuando los invitados huelen a podrido...</div>
+        <div class="subtitle">Algo huele aquí a podrido...</div>
         <button id="reload-page-btn" class="reload-page-btn" onclick="window.location.reload()" title="Recargar página">🔄</button>
         <button id="restart-game-btn" class="restart-game-btn" onclick="restartGame()">REINICIAR</button>
     </header>
@@ -1611,8 +1611,8 @@
             <div class="minigame-container">
                 <!-- Fase 1: Botón MOVERSE -->
                 <div id="move-phase" class="minigame-phase">
-                    <h2 class="minigame-title">CONTENED LA RESPIRACION</h2>
-                    <p class="minigame-description">Pulsad "MOVER" a la vez</p>
+                    <h2 class="minigame-title">🎵 MINIJUEGO DE SONIDOS</h2>
+                    <p class="minigame-description">Prepárate para moverte y escuchar sonidos</p>
                     <button id="move-btn" class="minigame-btn move-btn" onclick="startMovementPhase()">
                         MOVERSE
                     </button>
@@ -1620,15 +1620,15 @@
 
                 <!-- Fase 2: Contador regresivo -->
                 <div id="countdown-phase" class="minigame-phase" style="display: none;">
-                    <h2 class="minigame-title">PREPÁRATE</h2>
+                    <h2 class="minigame-title">🎵 PREPÁRATE</h2>
                     <div id="countdown-display" class="countdown-display">5</div>
-                    <p class="minigame-description">Los movimientos ocurrirán en...</p>
+                    <p class="minigame-description">Los sonidos se reproducirán en...</p>
                 </div>
 
                 <!-- Fase 3: Botón INVESTIGAR -->
                 <div id="investigate-phase" class="minigame-phase" style="display: none;">
                     <h2 class="minigame-title">🔍 INVESTIGACIÓN</h2>
-                    <p class="minigame-description">¿Qué movimiento escuchaste de cada jugador?</p>
+                    <p class="minigame-description">¿Qué sonido escuchaste de cada jugador?</p>
                     <button id="investigate-btn" class="minigame-btn investigate-btn" onclick="showSoundSelectionInterface()">
                         INVESTIGAR
                     </button>
@@ -2482,14 +2482,14 @@
             updateRoomDisplay(gameData.playerDistribution);
             
             // Mostrar botón "ANOTAR PREGUNTA" solo cuando no esté en modo de movimiento
-            /*const addQuestionBtn = document.querySelector('.add-question-btn');
+            const addQuestionBtn = document.querySelector('.add-question-btn');
             if (addQuestionBtn) {
                 if (gameData.state !== "MOVING") {
                     addQuestionBtn.style.display = 'inline';
                 } else {
                     addQuestionBtn.style.display = 'none';
                 }
-            }*/
+            }
             
             // Actualizar estado de jugadores (incluyendo contadores de preguntas)
             showDeadsInfo();
@@ -2887,10 +2887,10 @@
             disableRoomSelection();
             
             // Mostrar botón "ANOTAR PREGUNTA" cuando se deshabilita el modo de movimiento
-           /* const addQuestionBtn = document.querySelector('.add-question-btn');
+            const addQuestionBtn = document.querySelector('.add-question-btn');
             if (addQuestionBtn) {
                 addQuestionBtn.style.display = 'inline';
-            }*/
+            }
             
             // El estado de jugadores se mantiene visible siempre
         }
@@ -3773,8 +3773,7 @@
                             movementSounds: null,
                             soundSelections: null,
                             investigationCompleted: null,
-                            lastUpdated: serverTimestamp(),
-                            playerVisibility: {}
+                            lastUpdated: serverTimestamp()
                         });
                         
                         console.log('🎵 Estado del minijuego reseteado');
@@ -3796,7 +3795,7 @@
                 alert('Error al reiniciar el juego. Por favor, intenta de nuevo.');
                 
                 // Restaurar el botón en caso de error
-                restartBtn.textContent = 'REINICIAR';
+                restartBtn.textContent = 'REINICIAR JUEGO';
                 restartBtn.disabled = false;
                 restartBtn.style.opacity = '1';
                 restartBtn.style.cursor = 'pointer';
