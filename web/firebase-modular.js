@@ -134,42 +134,13 @@ async function getPlayerDistribution(gameCode) {
 async function startRoundEnding(gameCode) {
     try {
         const { db } = getFirebaseServices();
-        const { doc, updateDoc, serverTimestamp, getDoc } = window.firebaseServices;
-
-        // Obtener el total de jugadores del juego
-        const gameDoc = await getDoc(doc(db, 'games', gameCode));
-        if (!gameDoc.exists()) {
-            throw new Error('Juego no encontrado');
-        }
-        
-        const gameData = gameDoc.data();
-        const totalPlayers = gameData.totalPlayers || 4;
-
-        // Generar sonidos aleatorios para cada jugador (1, 2 o 3)
-        const movementSounds = {};
-        for (let i = 1; i <= totalPlayers; i++) {
-            movementSounds[i] = Math.floor(Math.random() * 3) + 1; // 1, 2 o 3
-        }
-
-        // Inicializar arrays para el minijuego
-        const soundSelections = {};
-        const investigationCompleted = {};
-        for (let i = 1; i <= totalPlayers; i++) {
-            soundSelections[i] = {};
-            investigationCompleted[i] = false;
-        }
+        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
 
         await updateDoc(doc(db, 'games', gameCode), {
             endingRound: true,
-            state: "MOVING",
-            movementSounds: movementSounds,
-            soundSelections: soundSelections,
-            investigationCompleted: investigationCompleted,
             lastUpdated: serverTimestamp()
         });
-        
-        console.log('✅ Ronda terminada, modo de movimiento activado con minijuego de sonidos');
-        console.log('🎵 Sonidos asignados:', movementSounds);
+        console.log('✅ Ronda terminada, modo de movimiento activado');
         return true;
     } catch (error) {
         console.error('❌ Error al terminar la ronda:', error);
@@ -692,11 +663,6 @@ window.FirebaseModular = {
     addPlayerMove,
     getPlayerMoves,
     
-    // Minijuego de sonidos
-    saveSoundSelection,
-    checkAllPlayersInvestigated,
-    calculatePlayerAccuracy,
-    
     // Autenticación
     signInAnonymously,
     getCurrentUser,
@@ -717,107 +683,6 @@ console.log('🔍 Estado de inicialización:', {
     firebaseServicesAvailable: !!window.firebaseServices,
     firebaseModularAvailable: !!window.FirebaseModular
 });
-
-// ===== FUNCIONES DEL MINIJUEGO DE SONIDOS =====
-
-// Función para guardar la selección de sonidos de un jugador
-async function saveSoundSelection(gameCode, playerNumber, soundSelections) {
-    try {
-        const { db } = getFirebaseServices();
-        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
-
-        const updateData = {
-            [`soundSelections.${playerNumber}`]: soundSelections,
-            [`investigationCompleted.${playerNumber}`]: true,
-            lastUpdated: serverTimestamp()
-        };
-
-        await updateDoc(doc(db, 'games', gameCode), updateData);
-        console.log(`✅ Selección de sonidos del jugador ${playerNumber} guardada:`, soundSelections);
-        return true;
-    } catch (error) {
-        console.error(`❌ Error al guardar selección de sonidos del jugador ${playerNumber}:`, error);
-        throw error;
-    }
-}
-
-// Función para verificar si todos los jugadores han completado la investigación
-async function checkAllPlayersInvestigated(gameCode) {
-    try {
-        const { db } = getFirebaseServices();
-        const { doc, getDoc } = window.firebaseServices;
-
-        const gameDoc = await getDoc(doc(db, 'games', gameCode));
-        if (!gameDoc.exists()) {
-            throw new Error('Juego no encontrado');
-        }
-
-        const gameData = gameDoc.data();
-        const investigationCompleted = gameData.investigationCompleted || {};
-        const totalPlayers = gameData.totalPlayers || 4;
-
-        // Verificar si todos han completado
-        for (let i = 1; i <= totalPlayers; i++) {
-            if (!investigationCompleted[i]) {
-                return false;
-            }
-        }
-
-        console.log('✅ Todos los jugadores han completado la investigación');
-        return true;
-    } catch (error) {
-        console.error('❌ Error al verificar completitud de investigación:', error);
-        throw error;
-    }
-}
-
-// Función para calcular el porcentaje de aciertos de un jugador
-async function calculatePlayerAccuracy(gameCode, playerNumber) {
-    try {
-        const { db } = getFirebaseServices();
-        const { doc, getDoc } = window.firebaseServices;
-
-        const gameDoc = await getDoc(doc(db, 'games', gameCode));
-        if (!gameDoc.exists()) {
-            throw new Error('Juego no encontrado');
-        }
-
-        const gameData = gameDoc.data();
-        const movementSounds = gameData.movementSounds || {};
-        const soundSelections = gameData.soundSelections || {};
-        const playerSelections = soundSelections[playerNumber] || {};
-        const totalPlayers = gameData.totalPlayers || 4;
-
-        if (!playerSelections || Object.keys(playerSelections).length === 0) {
-            console.log(`⚠️ Jugador ${playerNumber} no ha completado la investigación`);
-            return 60; // Valor por defecto si no ha investigado
-        }
-
-        let correctGuesses = 0;
-        let totalGuesses = 0;
-
-        // Calcular aciertos para cada jugador
-        for (let i = 1; i <= totalPlayers; i++) {
-            if (i === playerNumber) continue; // No contar a sí mismo
-            
-            const actualSound = movementSounds[i];
-            const guessedSound = playerSelections[i];
-            
-            if (actualSound && guessedSound && actualSound === guessedSound) {
-                correctGuesses++;
-            }
-            totalGuesses++;
-        }
-
-        const accuracy = totalGuesses > 0 ? Math.round((correctGuesses / totalGuesses) * 100) : 60;
-        console.log(`🎯 Jugador ${playerNumber}: ${correctGuesses}/${totalGuesses} aciertos = ${accuracy}%`);
-        
-        return accuracy;
-    } catch (error) {
-        console.error(`❌ Error al calcular aciertos del jugador ${playerNumber}:`, error);
-        return 60; // Valor por defecto en caso de error
-    }
-}
 
 // Función para configurar el observer de autenticación del juego
 function setupGameAuthObserver() {
