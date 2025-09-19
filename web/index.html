@@ -691,7 +691,7 @@
         .bomb-title { font-size: .95rem; }
         .bomb-button {
             width: 100%;
-            min-height: 42px;
+            min-height: 52px;
             border-radius: 8px;
             border: 1px solid rgba(0,0,0,0.35);
             background: linear-gradient(180deg, #ff5a5a 0%, #e73b3b 100%);
@@ -2737,6 +2737,13 @@
                     'torreon_oeste', 'pasillo_sur', 'torreon_este'
                 ];
 
+                // Mapeo de columnas (0,1,2)
+                const columnIndexByRoom = {
+                    'cocina': 0, 'pasillo_norte': 1, 'habitacion_principal': 2,
+                    'comedor': 0, 'centro': 1, 'habitacion_invitados': 2,
+                    'torreon_oeste': 0, 'pasillo_sur': 1, 'torreon_este': 2
+                };
+
                 // Preparar barra
                 const bar = document.getElementById('bomb-control-bar');
                 const columns = document.getElementById('bomb-columns');
@@ -2746,29 +2753,28 @@
                 bar.style.display = 'block';
                 if (title) title.style.display = 'block';
 
-                // Filtrar habitaciones elegibles (excluir centro)
-                const validEligibleRooms = eligibleRooms.filter(room => room !== 'centro');
-                
-                // Crear contenedores de columna dinámicamente (uno por habitación elegible)
-                const colContainers = validEligibleRooms.map(() => {
+                // Crear 3 contenedores de columna
+                const colContainers = [0,1,2].map(() => {
                     const div = document.createElement('div');
                     div.style.display = 'flex';
                     div.style.justifyContent = 'center';
                     return div;
                 });
 
-                // Para cada habitación elegible, crear un botón en su propia columna
-                validEligibleRooms.forEach((roomName, index) => {
+                // Para cada habitación elegible, crear un botón en la siguiente columna disponible
+                let currentColIndex = 0;
+                eligibleRooms.forEach((roomName) => {
+                    if (roomName === 'centro') return; // nunca botón para centro
+                    if (currentColIndex >= 3) return; // máximo 3 columnas
+
                     const btn = document.createElement('button');
                     // Usar siempre la variante 2 (oscuro con acento rojo)
                     btn.className = 'bomb-button bomb-variant-dark';
                     btn.textContent = getRoomDisplayName(roomName);
                     btn.onclick = () => handleBombPlacement(roomName);
-                    colContainers[index].appendChild(btn);
+                    colContainers[currentColIndex].appendChild(btn);
+                    currentColIndex++;
                 });
-
-                // Ajustar CSS para el número correcto de columnas
-                columns.style.gridTemplateColumns = `repeat(${colContainers.length}, 1fr)`;
 
                 // Insertar columnas en la barra
                 colContainers.forEach(col => columns.appendChild(col));
@@ -3451,14 +3457,8 @@
             if (buttonText === 'TERMINAR RONDA') {
                 // Activar modo de movimiento
                 try {
-                    const result = await window.FirebaseModular.startRoundEnding(window.gameParams.gameCode);
+                    await window.FirebaseModular.startRoundEnding(window.gameParams.gameCode);
                     console.log('🎯 Modo de movimiento activado');
-                    
-                    // Mostrar alerta si hay muertes pre-movimiento
-                    if (result.preMovementDeaths && result.preMovementDeaths.length > 0) {
-                        const deathsText = result.preMovementDeaths.map(p => `Jugador ${p}`).join(', ');
-                        alert(`💥 ¡BOMBA EXPLOTÓ! Los siguientes jugadores han muerto antes de poder moverse: ${deathsText}`);
-                    }
                 } catch (error) {
                     console.error('❌ Error al terminar la ronda:', error);
                     alert('Error al terminar la ronda. Por favor, intenta de nuevo.');

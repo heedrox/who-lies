@@ -136,38 +136,14 @@ async function getPlayerDistribution(gameCode) {
 async function startRoundEnding(gameCode) {
     try {
         const { db } = getFirebaseServices();
-        const { doc, updateDoc, getDoc, serverTimestamp } = window.firebaseServices;
+        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
 
-        // Obtener el estado actual del juego para evaluar bombas pre-movimiento
-        const gameDoc = await getDoc(doc(db, 'games', gameCode));
-        if (!gameDoc.exists()) {
-            throw new Error('Juego no encontrado');
-        }
-        
-        const gameData = gameDoc.data();
-        console.log('🔄 Iniciando fase de movimiento, evaluando bombas pre-movimiento...');
-
-        // Evaluar muertes por bomba antes del movimiento
-        const preMovementDeaths = processPreMovementBombDeaths(gameData);
-        
-        let updateData = {
+        await updateDoc(doc(db, 'games', gameCode), {
             endingRound: true,
             lastUpdated: serverTimestamp()
-        };
-
-        // Si hay muertes pre-movimiento, actualizar el array de muertos
-        if (preMovementDeaths.length > 0) {
-            updateData.deads = preMovementDeaths;
-            console.log(`💥 ${preMovementDeaths.length} jugador(es) muerto(s) por bomba pre-movimiento: [${preMovementDeaths.join(', ')}]`);
-        }
-
-        await updateDoc(doc(db, 'games', gameCode), updateData);
+        });
         console.log('✅ Ronda terminada, modo de movimiento activado');
-        
-        return {
-            success: true,
-            preMovementDeaths: preMovementDeaths
-        };
+        return true;
     } catch (error) {
         console.error('❌ Error al terminar la ronda:', error);
         throw error;
@@ -727,57 +703,6 @@ function processBombDeaths(gameData, newDistribution) {
     return newDeads;
 }
 
-// ==================== EVALUACIÓN PRE-MOVIMIENTO DE BOMBAS ====================
-
-// Función para verificar muertes por bomba antes del movimiento
-function checkPreMovementBombDeaths(gameData) {
-    // Verificar si hay bomba colocada
-    if (!gameData.bombPlaced) {
-        console.log('ℹ️ No hay bomba colocada, no hay muertes pre-movimiento');
-        return [];
-    }
-
-    const bombRoom = gameData.bombPlaced;
-    console.log(`💣 Verificando muertes pre-movimiento por bomba en habitación: ${bombRoom}`);
-
-    // Obtener jugadores que están en la habitación con bomba (distribución actual)
-    const playersInBombRoom = gameData.playerDistribution[bombRoom] || [];
-    console.log(`💣 Jugadores en habitación con bomba: [${playersInBombRoom.join(', ')}]`);
-
-    // Filtrar solo jugadores vivos (no en el array de muertos)
-    const currentDeads = gameData.deads || [];
-    const alivePlayersInBombRoom = playersInBombRoom.filter(player => !currentDeads.includes(player));
-
-    console.log(`💣 Jugadores vivos en habitación con bomba (pre-movimiento): [${alivePlayersInBombRoom.join(', ')}]`);
-
-    return alivePlayersInBombRoom;
-}
-
-// Función para procesar muertes por bomba antes del movimiento
-function processPreMovementBombDeaths(gameData) {
-    const preMovementDeaths = checkPreMovementBombDeaths(gameData);
-
-    if (preMovementDeaths.length === 0) {
-        console.log('ℹ️ No hay muertes pre-movimiento por bomba');
-        return [];
-    }
-
-    console.log(`💥 Procesando ${preMovementDeaths.length} muerte(s) pre-movimiento por bomba: [${preMovementDeaths.join(', ')}]`);
-
-    // Agregar las muertes pre-movimiento al array de muertos existente
-    const currentDeads = gameData.deads || [];
-    const newDeads = [...currentDeads];
-
-    preMovementDeaths.forEach(player => {
-        if (!newDeads.includes(player)) {
-            newDeads.push(player);
-            console.log(`💥 JUGADOR ${player} muerto por bomba pre-movimiento en ${gameData.bombPlaced}`);
-        }
-    });
-
-    return newDeads;
-}
-
 // Función para iniciar sesión anónimamente
 async function signInAnonymously() {
     try {
@@ -944,8 +869,6 @@ window.FirebaseModular = {
     getBombEligibleRooms,
     checkBombDeaths,
     processBombDeaths,
-    checkPreMovementBombDeaths,
-    processPreMovementBombDeaths,
     
     // Autenticación
     signInAnonymously,
