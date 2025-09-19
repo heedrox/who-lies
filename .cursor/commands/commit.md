@@ -1,6 +1,6 @@
 Haz commit y push directamente.
 
-El mensaje debe ser al continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas".
+El mensaje debe ser la continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas"; pero no debe incluir la frase "este commit hace que".
 
 Solo usa una frase. 
 

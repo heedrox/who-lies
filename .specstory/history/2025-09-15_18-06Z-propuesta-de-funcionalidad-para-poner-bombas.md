@@ -4558,3 +4558,87 @@ El sistema de bombas está ahora **completamente implementado y desplegado**. ¡
 
 ---
 
+_**User (2025-09-19 12:51Z)**_
+
+/commit 
+
+--- Cursor Command: commit.md ---
+Haz commit y push directamente.
+
+El mensaje debe ser al continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas".
+
+Solo usa una frase. 
+
+Utiliza también "feat:" o "bugfix" o "refactor" al principio del mensaje.
+
+El commit debe ser una única linea.
+--- End Command ---
+
+---
+
+_**Assistant**_
+
+```bash
+git add .
+```
+
+---
+
+```bash
+git status
+```
+
+```
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   .cursor/commands/commit.md
+        modified:   .specstory/history/2025-09-15_18-06Z-propuesta-de-funcionalidad-para-poner-bombas.md                                                        
+```
+
+---
+
+```bash
+git commit -m "feat: este commit hace que se añada un comando personalizado de commit para automatizar el proceso"
+```
+
+```
+[main f616fce] feat: este commit hace que se añada un comando personalizado de commit para automatizar el proceso                                               
+ 2 files changed, 150 insertions(+)
+ create mode 100644 .cursor/commands/commit.md
+```
+
+---
+
+```bash
+git push
+```
+
+```
+Enumerating objects: 14, done.
+Counting objects: 100% (14/14), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 2.49 KiB | 1.25 MiB/s, done.
+Total 8 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:heedrox/who-lies.git
+   b219165..f616fce  main -> main
+```
+
+---
+
+¡Listo! ✅ Commit y push completados.
+
+**Commit realizado**: `feat: este commit hace que se añada un comando personalizado de commit para automatizar el proceso`
+
+- **2 archivos modificados**
+- **150 líneas añadidas** 
+- **Comando personalizado creado** en `.cursor/commands/commit.md`
+
+El comando personalizado ya está disponible para futuros commits rápidos.
+
+---
+
