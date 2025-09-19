@@ -4417,3 +4417,144 @@ Ahora los botones se distribuirán correctamente en lugar de amontonarse todos e
 
 ---
 
+_**User (2025-09-19 12:51Z)**_
+
+joe, eres un crack, gracias
+
+---
+
+_**Assistant**_
+
+¡De nada! Me alegra que haya quedado bien. 😊
+
+Ahora tienes el **sistema de bombas completo** funcionando:
+
+## ✅ **Lo que funciona**:
+- **Bombas pre-movimiento**: Matan jugadores antes de que puedan moverse
+- **Bombas post-movimiento**: Matan jugadores que se mueven a habitaciones con bomba
+- **Botones bien distribuidos**: Cada habitación elegible tiene su propio botón en su columna
+- **Alertas informativas**: Se notifica cuando hay muertes por bomba
+- **Comportamiento realista**: Los jugadores pueden intentar moverse pero sus movimientos se ignoran si están muertos
+
+## 🧪 **Para probar todo**:
+1. Coloca una bomba en una habitación con jugadores
+2. Termina la ronda
+3. En la siguiente ronda, haz clic "TERMINAR RONDA"
+4. Verás la alerta de muerte por bomba pre-movimiento
+5. Los botones de bomba se distribuyen correctamente
+6. Los jugadores vivos pueden moverse, los muertos no pueden ejecutar sus movimientos
+
+¡Disfruta del juego con las bombas! 💣🎮
+
+---
+
+_**User (2025-09-19 12:51Z)**_
+
+commit y push
+
+---
+
+_**Assistant**_
+
+Voy a hacer commit y push de todos los cambios del sistema de bombas.
+
+
+---
+
+```bash
+cd /Users/jordimarti/Development/who-lies && git add .
+```
+
+---
+
+```bash
+git status
+```
+
+```
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   .specstory/history/2025-08-26_18-23Z-colapsar-rol-de-jugador-en-la-app.md                                                                   
+        new file:   .specstory/history/2025-09-15_18-06Z-propuesta-de-funcionalidad-para-poner-bombas.md                                                        
+        new file:   docs/features/0003_PLAN.md
+        new file:   docs/features/0004_PLAN.md
+        modified:   web/firebase-modular.js
+        modified:   web/index.html
+```
+
+---
+
+```bash
+git commit -m "feat: Implementar sistema completo de bombas del asesino
+
+- Sistema de colocación de bombas durante fase de movimiento
+- Evaluación dual: bombas pre-movimiento y post-movimiento  
+- Botones de bomba distribuidos dinámicamente por habitaciones elegibles
+- Alertas informativas de muertes por bomba
+- Integración con sistema existente de muerte y movimiento
+- Persistencia de bombas entre rondas
+- Visibilidad de bombas solo para el asesino
+
+Features implementadas:
+- Colocación de bombas en habitación actual o contiguas
+- Muerte inmediata de jugadores en habitaciones con bomba al inicio de ronda
+- Muerte de jugadores que se mueven a habitaciones con bomba
+- UI mejorada con botones distribuidos correctamente
+- Validaciones de negocio completas
+
+Archivos modificados:
+- web/firebase-modular.js: funciones de bomba y evaluación dual
+- web/index.html: UI de botones y alertas
+- docs/features/0003_PLAN.md: plan original de bombas
+- docs/features/0004_PLAN.md: plan de evaluación dual"
+```
+
+```
+[main b219165] feat: Implementar sistema completo de bombas del asesino
+ 6 files changed, 5491 insertions(+), 13 deletions(-)
+ create mode 100644 .specstory/history/2025-09-15_18-06Z-propuesta-de-funcionalidad-para-poner-bombas.md                                                        
+ create mode 100644 docs/features/0003_PLAN.md
+ create mode 100644 docs/features/0004_PLAN.md
+```
+
+---
+
+```bash
+git push
+```
+
+```
+Enumerating objects: 22, done.
+Counting objects: 100% (22/22), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (13/13), 45.15 KiB | 4.51 MiB/s, done.
+Total 13 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (6/6), completed with 5 local objects.
+To github.com:heedrox/who-lies.git
+   7833edf..b219165  main -> main
+```
+
+---
+
+¡Perfecto! ✅ **Commit y push completados exitosamente**.
+
+## 📊 **Resumen del commit**:
+- **6 archivos modificados**
+- **5,491 líneas añadidas, 13 eliminadas**
+- **3 archivos nuevos creados** (planes de features)
+
+## 🚀 **Lo que se ha subido**:
+- **Sistema completo de bombas del asesino**
+- **Evaluación dual** (pre-movimiento y post-movimiento)
+- **UI mejorada** con botones distribuidos correctamente
+- **Documentación completa** con planes técnicos
+- **Integración perfecta** con el sistema existente
+
+El sistema de bombas está ahora **completamente implementado y desplegado**. ¡Los jugadores pueden disfrutar de esta nueva mecánica estratégica! 💣🎮
+
+---
+
