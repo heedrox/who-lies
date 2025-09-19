@@ -3596,3 +3596,72 @@ Recarga la página y verifica que los botones aparezcan distribuidos correctamen
 
 ---
 
+_**User (2025-09-19 12:51Z)**_
+
+/commit 
+
+--- Cursor Command: commit.md ---
+Haz commit y push directamente.
+
+El mensaje debe ser la continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas"; pero no debe incluir la frase "este commit hace que".
+
+Solo usa una frase. 
+
+Utiliza también "feat:" o "bugfix" o "refactor" al principio del mensaje.
+
+El commit debe ser una única linea.
+--- End Command ---
+
+---
+
+_**Assistant**_
+
+```bash
+git add -A && git commit -m "feat: el asesino puede colocar bombas durante la fase de movimiento con botones debajo del mapa" && git push
+```
+
+```
+[main e4348f7] feat: el asesino puede colocar bombas durante la fase de movimiento con botones debajo del mapa                                                  
+ 4 files changed, 49 insertions(+), 1339 deletions(-)
+ delete mode 100644 docs/features/0004_PLAN.md
+Enumerating objects: 19, done.
+Counting objects: 100% (19/19), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (10/10), 2.04 KiB | 2.04 MiB/s, done.
+Total 10 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To github.com:heedrox/who-lies.git
+   168c630..e4348f7  main -> main
+```
+
+---
+
+## Todo List
+
+- [x] Fase 5: Crear función checkBombDeaths() en firebase-modular.js
+- [x] Fase 5: Crear función processBombDeaths() en firebase-modular.js
+- [x] Fase 5: Modificar finalizeRound() para verificar muertes por bomba
+- [x] Fase 5: Modificar calculateNewDistribution() para considerar muertes por bomba
+- [x] Estructura de datos para bombas en Firebase
+- [x] Lógica de colocación de bombas
+- [x] Interfaz de usuario para colocación de bombas
+- [x] Visualización de bombas en el mapa
+- [x] Mecánica de muerte por bomba
+
+---
+
+¡Perfecto! El commit se ha realizado exitosamente. 
+
+**Resumen de lo implementado:**
+- ✅ **Sistema completo de bombas** para el asesino
+- ✅ **Botones debajo del mapa** con diseño coherente al juego
+- ✅ **Validaciones** (solo asesino, solo en movimiento, solo una bomba)
+- ✅ **Visualización** del emoji �� solo para el asesino
+- ✅ **Mecánica de muerte** al finalizar la ronda
+- ✅ **Persistencia** en Firebase y reseteo al reiniciar
+
+Todas las fases del plan están completadas. El sistema de bombas está funcional y listo para usar.
+
+---
+
