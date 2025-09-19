@@ -69,7 +69,9 @@ async function savePlayerDistribution(gameCode, totalPlayers, distribution, role
             // Campo para el sistema de muertes
             deads: [],
             // Campo para el sistema de preguntas
-            numberQuestionsMade: numberQuestionsMade
+            numberQuestionsMade: numberQuestionsMade,
+            // Campo para el sistema de bombas
+            bombPlaced: null
         };
         
         // Agregar visibilidad si se proporciona
@@ -134,14 +136,38 @@ async function getPlayerDistribution(gameCode) {
 async function startRoundEnding(gameCode) {
     try {
         const { db } = getFirebaseServices();
-        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
+        const { doc, updateDoc, getDoc, serverTimestamp } = window.firebaseServices;
 
-        await updateDoc(doc(db, 'games', gameCode), {
+        // Obtener el estado actual del juego para evaluar bombas pre-movimiento
+        const gameDoc = await getDoc(doc(db, 'games', gameCode));
+        if (!gameDoc.exists()) {
+            throw new Error('Juego no encontrado');
+        }
+        
+        const gameData = gameDoc.data();
+        console.log('🔄 Iniciando fase de movimiento, evaluando bombas pre-movimiento...');
+
+        // Evaluar muertes por bomba antes del movimiento
+        const preMovementDeaths = processPreMovementBombDeaths(gameData);
+        
+        let updateData = {
             endingRound: true,
             lastUpdated: serverTimestamp()
-        });
+        };
+
+        // Si hay muertes pre-movimiento, actualizar el array de muertos
+        if (preMovementDeaths.length > 0) {
+            updateData.deads = preMovementDeaths;
+            console.log(`💥 ${preMovementDeaths.length} jugador(es) muerto(s) por bomba pre-movimiento: [${preMovementDeaths.join(', ')}]`);
+        }
+
+        await updateDoc(doc(db, 'games', gameCode), updateData);
         console.log('✅ Ronda terminada, modo de movimiento activado');
-        return true;
+        
+        return {
+            success: true,
+            preMovementDeaths: preMovementDeaths
+        };
     } catch (error) {
         console.error('❌ Error al terminar la ronda:', error);
         throw error;
@@ -242,10 +268,12 @@ async function resetDeadsArray() {
 			numberQuestionsMade: numberQuestionsMade,
 			// Definir el objetivo del asesino para la nueva partida
 			targetAsesino: targetAsesino,
+			// Resetear bomba colocada
+			bombPlaced: null,
 			lastUpdated: serverTimestamp()
 		});
         
-        console.log('✅ Array de muertos y contadores de preguntas reseteados exitosamente');
+        console.log('✅ Array de muertos, contadores de preguntas y bomba reseteados exitosamente');
         if (typeof targetAsesino === 'number') {
             console.log(`🎯 Objetivo del asesino definido: JUG. ${targetAsesino}`);
         } else {
@@ -350,10 +378,9 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
         }
         
         // Procesar muerte si existe
+        let currentDeads = currentData.deads || [];
+        
         if (nextDeath !== undefined && nextDeath !== null) {
-            // Obtener array de muertos actual o crear uno nuevo
-            const currentDeads = currentData.deads || [];
-            
             if (nextDeath !== null) {
                 // Agregar la nueva víctima al array de muertos
                 if (!currentDeads.includes(nextDeath)) {
@@ -362,13 +389,27 @@ async function finalizeRound(gameCode, newDistribution, newVisibility) {
                 }
             }
             
-            // Actualizar array de muertos
-            updateData.deads = currentDeads;
-            
             console.log(`✅ Muerte procesada. Array de muertos actualizado: [${currentDeads.join(', ')}]`);
         } else {
             console.log('ℹ️ No hay muerte pendiente en esta ronda');
         }
+        
+        // Procesar muertes por bomba
+        const bombDeaths = processBombDeaths(currentData, newDistribution);
+        if (bombDeaths.length > 0) {
+            // Combinar muertes normales con muertes por bomba
+            const allDeaths = [...currentDeads];
+            bombDeaths.forEach(player => {
+                if (!allDeaths.includes(player)) {
+                    allDeaths.push(player);
+                }
+            });
+            currentDeads = allDeaths;
+            console.log(`💥 Muertes por bomba procesadas. Array de muertos final: [${currentDeads.join(', ')}]`);
+        }
+        
+        // Actualizar array de muertos
+        updateData.deads = currentDeads;
         
         // Limpiar campo nextDeath
         updateData.nextDeath = deleteField();
@@ -502,6 +543,239 @@ async function getPlayerMoves(gameCode) {
         console.error('❌ Error al obtener movimientos:', error);
         throw error;
     }
+}
+
+// ==================== SISTEMA DE BOMBAS ====================
+
+// Función para colocar una bomba
+async function placeBomb(gameCode, roomName) {
+    try {
+        const { db } = getFirebaseServices();
+        const { doc, updateDoc, serverTimestamp } = window.firebaseServices;
+
+        await updateDoc(doc(db, 'games', gameCode), {
+            bombPlaced: roomName,
+            lastUpdated: serverTimestamp()
+        });
+        
+        console.log(`💣 Bomba colocada en ${roomName}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Error al colocar bomba:', error);
+        throw error;
+    }
+}
+
+// Función para obtener la ubicación de la bomba
+async function getBombLocation(gameCode) {
+    try {
+        const { db } = getFirebaseServices();
+        const { doc, getDoc } = window.firebaseServices;
+
+        const docSnap = await getDoc(doc(db, 'games', gameCode));
+        if (docSnap.exists()) {
+            const gameData = docSnap.data();
+            return gameData.bombPlaced || null;
+        }
+        return null;
+    } catch (error) {
+        console.error('❌ Error al obtener ubicación de bomba:', error);
+        throw error;
+    }
+}
+
+// Función para validar si se puede colocar una bomba
+function validateBombPlacement(playerNumber, roomName, gameData) {
+    // Verificar que el jugador es el asesino
+    if (gameData.roles.ASESINO !== playerNumber) {
+        console.log('❌ Solo el asesino puede colocar bombas');
+        return false;
+    }
+    
+    // Verificar que estamos en fase de movimiento
+    if (gameData.endingRound !== true) {
+        console.log('❌ Solo se pueden colocar bombas durante la fase de movimiento');
+        return false;
+    }
+    
+    // Verificar que no hay bomba colocada previamente
+    if (gameData.bombPlaced !== null) {
+        console.log('❌ Ya hay una bomba colocada en la partida');
+        return false;
+    }
+    
+    // Verificar que la habitación no es 'centro'
+    if (roomName === 'centro') {
+        console.log('❌ No se puede colocar bomba en el centro');
+        return false;
+    }
+    
+    // Verificar que la habitación es válida (actual o contigua)
+    const currentRoom = getCurrentPlayerRoom(playerNumber, gameData.playerDistribution);
+    if (!currentRoom) {
+        console.log('❌ No se pudo determinar la habitación actual del jugador');
+        return false;
+    }
+    
+    // Diccionario de habitaciones contiguas (roomMovements)
+    const roomMovements = {
+        'cocina': ['pasillo_norte', 'comedor'],
+        'pasillo_norte': ['cocina', 'habitacion_principal'],
+        'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
+        'comedor': ['cocina', 'torreon_oeste'],
+        'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+        'torreon_oeste': ['comedor', 'pasillo_sur'],
+        'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+        'torreon_este': ['pasillo_sur', 'habitacion_invitados']
+    };
+    
+    // Permitir colocación en habitación actual o contiguas
+    const validRooms = [currentRoom, ...(roomMovements[currentRoom] || [])];
+    if (!validRooms.includes(roomName)) {
+        console.log(`❌ La habitación ${roomName} no es accesible desde ${currentRoom}`);
+        return false;
+    }
+    
+    // Verificar que el asesino no está muerto
+    if (gameData.deads && gameData.deads.includes(playerNumber)) {
+        console.log('❌ El asesino está muerto, no puede colocar bombas');
+        return false;
+    }
+    
+    console.log(`✅ Validación de bomba exitosa: ${roomName} desde ${currentRoom}`);
+    return true;
+}
+
+// Función auxiliar para obtener la habitación actual del jugador
+function getCurrentPlayerRoom(playerNumber, distribution) {
+    for (let room in distribution) {
+        if (distribution[room] && distribution[room].includes(playerNumber)) {
+            return room;
+        }
+    }
+    return null;
+}
+
+// Función para obtener habitaciones donde se puede colocar bomba
+function getBombEligibleRooms(playerNumber, gameData) {
+    const currentRoom = getCurrentPlayerRoom(playerNumber, gameData.playerDistribution);
+    if (!currentRoom) return [];
+    
+    // Diccionario de habitaciones contiguas (roomMovements)
+    const roomMovements = {
+        'cocina': ['pasillo_norte', 'comedor'],
+        'pasillo_norte': ['cocina', 'habitacion_principal'],
+        'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
+        'comedor': ['cocina', 'torreon_oeste'],
+        'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+        'torreon_oeste': ['comedor', 'pasillo_sur'],
+        'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+        'torreon_este': ['pasillo_sur', 'habitacion_invitados']
+    };
+    
+    // Incluir habitación actual y contiguas, excluyendo 'centro'
+    const validRooms = [currentRoom, ...(roomMovements[currentRoom] || [])];
+    return validRooms.filter(room => room !== 'centro');
+}
+
+// Función para verificar si algún jugador muere por bomba
+function checkBombDeaths(gameData, newDistribution) {
+    // Verificar si hay bomba colocada
+    if (!gameData.bombPlaced) {
+        console.log('ℹ️ No hay bomba colocada, no hay muertes por bomba');
+        return [];
+    }
+    
+    const bombRoom = gameData.bombPlaced;
+    console.log(`💣 Verificando muertes por bomba en habitación: ${bombRoom}`);
+    
+    // Obtener jugadores que están en la habitación con bomba
+    const playersInBombRoom = newDistribution[bombRoom] || [];
+    console.log(`💣 Jugadores en habitación con bomba: [${playersInBombRoom.join(', ')}]`);
+    
+    // Filtrar solo jugadores vivos (no en el array de muertos)
+    const currentDeads = gameData.deads || [];
+    const alivePlayersInBombRoom = playersInBombRoom.filter(player => !currentDeads.includes(player));
+    
+    console.log(`💣 Jugadores vivos en habitación con bomba: [${alivePlayersInBombRoom.join(', ')}]`);
+    
+    return alivePlayersInBombRoom;
+}
+
+// Función para procesar muertes por bomba
+function processBombDeaths(gameData, newDistribution) {
+    const bombDeaths = checkBombDeaths(gameData, newDistribution);
+    
+    if (bombDeaths.length === 0) {
+        console.log('ℹ️ No hay muertes por bomba en esta ronda');
+        return [];
+    }
+    
+    console.log(`💥 Procesando ${bombDeaths.length} muerte(s) por bomba: [${bombDeaths.join(', ')}]`);
+    
+    // Agregar las muertes por bomba al array de muertos existente
+    const currentDeads = gameData.deads || [];
+    const newDeads = [...currentDeads];
+    
+    bombDeaths.forEach(player => {
+        if (!newDeads.includes(player)) {
+            newDeads.push(player);
+            console.log(`💥 JUGADOR ${player} muerto por bomba en ${gameData.bombPlaced}`);
+        }
+    });
+    
+    return newDeads;
+}
+
+// ==================== EVALUACIÓN PRE-MOVIMIENTO DE BOMBAS ====================
+
+// Función para verificar muertes por bomba antes del movimiento
+function checkPreMovementBombDeaths(gameData) {
+    // Verificar si hay bomba colocada
+    if (!gameData.bombPlaced) {
+        console.log('ℹ️ No hay bomba colocada, no hay muertes pre-movimiento');
+        return [];
+    }
+
+    const bombRoom = gameData.bombPlaced;
+    console.log(`💣 Verificando muertes pre-movimiento por bomba en habitación: ${bombRoom}`);
+
+    // Obtener jugadores que están en la habitación con bomba (distribución actual)
+    const playersInBombRoom = gameData.playerDistribution[bombRoom] || [];
+    console.log(`💣 Jugadores en habitación con bomba: [${playersInBombRoom.join(', ')}]`);
+
+    // Filtrar solo jugadores vivos (no en el array de muertos)
+    const currentDeads = gameData.deads || [];
+    const alivePlayersInBombRoom = playersInBombRoom.filter(player => !currentDeads.includes(player));
+
+    console.log(`💣 Jugadores vivos en habitación con bomba (pre-movimiento): [${alivePlayersInBombRoom.join(', ')}]`);
+
+    return alivePlayersInBombRoom;
+}
+
+// Función para procesar muertes por bomba antes del movimiento
+function processPreMovementBombDeaths(gameData) {
+    const preMovementDeaths = checkPreMovementBombDeaths(gameData);
+
+    if (preMovementDeaths.length === 0) {
+        console.log('ℹ️ No hay muertes pre-movimiento por bomba');
+        return [];
+    }
+
+    console.log(`💥 Procesando ${preMovementDeaths.length} muerte(s) pre-movimiento por bomba: [${preMovementDeaths.join(', ')}]`);
+
+    // Agregar las muertes pre-movimiento al array de muertos existente
+    const currentDeads = gameData.deads || [];
+    const newDeads = [...currentDeads];
+
+    preMovementDeaths.forEach(player => {
+        if (!newDeads.includes(player)) {
+            newDeads.push(player);
+            console.log(`💥 JUGADOR ${player} muerto por bomba pre-movimiento en ${gameData.bombPlaced}`);
+        }
+    });
+
+    return newDeads;
 }
 
 // Función para iniciar sesión anónimamente
@@ -662,6 +936,16 @@ window.FirebaseModular = {
     updateGameState,
     addPlayerMove,
     getPlayerMoves,
+    
+    // Sistema de bombas
+    placeBomb,
+    getBombLocation,
+    validateBombPlacement,
+    getBombEligibleRooms,
+    checkBombDeaths,
+    processBombDeaths,
+    checkPreMovementBombDeaths,
+    processPreMovementBombDeaths,
     
     // Autenticación
     signInAnonymously,

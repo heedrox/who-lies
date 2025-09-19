@@ -220,6 +220,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative; /* Para posicionar correctamente la bomba absoluta */
         }
 
         .room:hover {
@@ -663,6 +664,70 @@
                 box-shadow: 0 6px 20px rgba(107,142,35,0.8);
             }
         }
+
+        @keyframes bombPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        /* Barra inferior de bomba: alineada con el mapa */
+        .bomb-control-bar {
+            display: none;
+            margin: 48px auto 0;
+            max-width: 980px;
+            padding: 0 8px;
+        }
+        .bomb-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .bomb-title { font-size: .95rem; }
+        .bomb-button {
+            width: 100%;
+            min-height: 42px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.35);
+            background: linear-gradient(180deg, #ff5a5a 0%, #e73b3b 100%);
+            color: #fff;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.1);
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: transform 0.05s ease-in-out, filter 0.15s ease-in-out;
+        }
+        .bomb-button:hover { filter: brightness(1.05); }
+        .bomb-button:active { transform: translateY(1px); }
+
+        /* Variantes temporales (una por columna) */
+        .bomb-variant-chip {
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .bomb-variant-chip::before { content: '💣'; font-size: 16px; animation: bombPulse 2s infinite; }
+
+        .bomb-variant-dark {
+            background: linear-gradient(145deg,#2b2b2b,#3a3a3a);
+            border: 2px solid #b22222;
+            box-shadow: 0 6px 18px rgba(178,34,34,.25);
+            text-shadow: none;
+        }
+        .bomb-variant-dark:hover { box-shadow:0 8px 24px rgba(255,68,68,.35); border-color:#ff4444; filter:none; }
+
+        .bomb-variant-outline {
+            background: transparent;
+            color: #ff6868;
+            border: 2px solid #ff6868;
+            box-shadow: none; text-shadow: none;
+        }
+        .bomb-variant-outline:hover { background: rgba(255,68,68,.15); filter:none; }
 
         /* Estilos para el estado de movimientos */
         .movement-status {
@@ -1346,6 +1411,12 @@
                 <div class="room">
                     <div class="room-text">TORREÓN ESTE</div>
                 </div>
+            </div>
+
+            <!-- Barra de botones de bomba (debajo del mapa) -->
+            <div id="bomb-control-bar" class="bomb-control-bar">
+                <div id="bomb-title" class="bomb-title" style="display:none; margin:0 0 8px 0; text-align:center; font-weight:800; color:#ff6868; letter-spacing:.3px;">SOLTAR BOMBA EN…</div>
+                <div id="bomb-columns" class="bomb-columns"></div>
             </div>
 
 
@@ -2048,6 +2119,9 @@
             
             // Actualizar estado de jugadores (incluyendo contadores de preguntas)
             showDeadsInfo();
+            
+            // Actualizar visibilidad de bombas
+            updateBombVisibility(gameData);
         }
 
         // Función para habilitar el modo de movimiento
@@ -2614,6 +2688,22 @@
                     room.onclick = null;
                 }
             });
+            
+            // Mostrar botones de bomba si es el asesino y no hay bomba colocada
+            console.log('🔍 Debug botones de bomba:');
+            console.log('  - currentPlayer:', currentPlayer);
+            console.log('  - playerRole:', playerRole);
+            console.log('  - gameData.bombPlaced:', gameData.bombPlaced);
+            console.log('  - endingRound:', gameData.endingRound);
+            
+            if (playerRole === 'ASESINO/A' && gameData.bombPlaced === null) {
+                console.log('✅ Mostrando botones de bomba');
+                showBombButtons(gameData);
+            } else {
+                console.log('❌ No se muestran botones de bomba');
+                if (playerRole !== 'ASESINO/A') console.log('  - Razón: No es asesino');
+                if (gameData.bombPlaced !== null) console.log('  - Razón: Ya hay bomba colocada');
+            }
         }
         
         // Función para deshabilitar selección de habitaciones
@@ -2623,6 +2713,205 @@
                 room.classList.remove('movement-available');
                 room.style.cursor = 'default';
                 room.onclick = null;
+            });
+            
+            // Ocultar botones de bomba
+            hideBombButtons();
+        }
+        
+        // ==================== SISTEMA DE BOMBAS ====================
+        
+        // Función para mostrar botones de bomba (debajo del mapa, 1 por columna)
+        function showBombButtons(gameData) {
+            console.log('💣 showBombButtons() - barra inferior');
+            try {
+                const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+                if (!currentPlayer) return;
+
+                const eligibleRooms = getBombEligibleRooms(currentPlayer, gameData);
+                console.log('💣 Habitaciones elegibles:', eligibleRooms);
+
+                const roomNames = [
+                    'cocina', 'pasillo_norte', 'habitacion_principal',
+                    'comedor', 'centro', 'habitacion_invitados',
+                    'torreon_oeste', 'pasillo_sur', 'torreon_este'
+                ];
+
+                // Preparar barra
+                const bar = document.getElementById('bomb-control-bar');
+                const columns = document.getElementById('bomb-columns');
+                const title = document.getElementById('bomb-title');
+                if (!bar || !columns) return;
+                columns.innerHTML = '';
+                bar.style.display = 'block';
+                if (title) title.style.display = 'block';
+
+                // Filtrar habitaciones elegibles (excluir centro)
+                const validEligibleRooms = eligibleRooms.filter(room => room !== 'centro');
+                
+                // Crear contenedores de columna dinámicamente (uno por habitación elegible)
+                const colContainers = validEligibleRooms.map(() => {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'center';
+                    return div;
+                });
+
+                // Para cada habitación elegible, crear un botón en su propia columna
+                validEligibleRooms.forEach((roomName, index) => {
+                    const btn = document.createElement('button');
+                    // Usar siempre la variante 2 (oscuro con acento rojo)
+                    btn.className = 'bomb-button bomb-variant-dark';
+                    btn.textContent = getRoomDisplayName(roomName);
+                    btn.onclick = () => handleBombPlacement(roomName);
+                    colContainers[index].appendChild(btn);
+                });
+
+                // Ajustar CSS para el número correcto de columnas
+                columns.style.gridTemplateColumns = `repeat(${colContainers.length}, 1fr)`;
+
+                // Insertar columnas en la barra
+                colContainers.forEach(col => columns.appendChild(col));
+
+                console.log('💣 Botones de bomba renderizados en barra inferior');
+            } catch (error) {
+                console.error('❌ Error en showBombButtons (barra inferior):', error);
+            }
+        }
+        
+        // Función para ocultar botones de bomba
+        function hideBombButtons() {
+            const bar = document.getElementById('bomb-control-bar');
+            const columns = document.getElementById('bomb-columns');
+            if (columns) columns.innerHTML = '';
+            if (bar) bar.style.display = 'none';
+        }
+        
+        // Función para manejar la colocación de bomba
+        async function handleBombPlacement(roomName) {
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            if (!currentPlayer) return;
+            
+            try {
+                // Validar colocación de bomba
+                const isValid = window.FirebaseModular.validateBombPlacement(currentPlayer, roomName, window.gameData);
+                if (!isValid) {
+                    alert('No se puede colocar la bomba en esta habitación.');
+                    return;
+                }
+                
+                // Confirmar colocación
+                const confirmPlacement = confirm(`¿Colocar bomba en ${getRoomDisplayName(roomName)}?`);
+                if (!confirmPlacement) return;
+                
+                // Colocar bomba
+                await window.FirebaseModular.placeBomb(window.gameParams.gameCode, roomName);
+                console.log(`💣 Bomba colocada en ${roomName}`);
+                
+                // Ocultar botones de bomba
+                hideBombButtons();
+                
+                // Mostrar mensaje de confirmación
+                alert('¡Bomba colocada exitosamente!');
+                
+            } catch (error) {
+                console.error('❌ Error al colocar bomba:', error);
+                alert('Error al colocar la bomba. Por favor, intenta de nuevo.');
+            }
+        }
+        
+        // Función para obtener habitaciones donde se puede colocar bomba
+        function getBombEligibleRooms(playerNumber, gameData) {
+            const currentRoom = getCurrentPlayerRoom(playerNumber, gameData.playerDistribution);
+            if (!currentRoom) return [];
+            
+            // Diccionario de habitaciones contiguas (roomMovements)
+            const roomMovements = {
+                'cocina': ['pasillo_norte', 'comedor'],
+                'pasillo_norte': ['cocina', 'habitacion_principal'],
+                'habitacion_principal': ['pasillo_norte', 'habitacion_invitados'],
+                'comedor': ['cocina', 'torreon_oeste'],
+                'habitacion_invitados': ['habitacion_principal', 'torreon_este'],
+                'torreon_oeste': ['comedor', 'pasillo_sur'],
+                'pasillo_sur': ['torreon_oeste', 'torreon_este'],
+                'torreon_este': ['pasillo_sur', 'habitacion_invitados']
+            };
+            
+            // Incluir habitación actual y contiguas, excluyendo 'centro'
+            const validRooms = [currentRoom, ...(roomMovements[currentRoom] || [])];
+            return validRooms.filter(room => room !== 'centro');
+        }
+        
+        // Función para renderizar emoji de bomba en una habitación
+        function renderBombInRoom(roomElement, roomName) {
+            // Verificar si hay una bomba colocada y si el jugador actual es el asesino
+            if (!window.gameData || !window.gameData.bombPlaced) {
+                // No hay bomba, ocultar emoji si existe
+                const existingBomb = roomElement.querySelector('.bomb-emoji');
+                if (existingBomb) {
+                    existingBomb.remove();
+                }
+                return;
+            }
+            
+            // Verificar si la bomba está en esta habitación
+            if (window.gameData.bombPlaced !== roomName) {
+                // La bomba no está en esta habitación, ocultar emoji si existe
+                const existingBomb = roomElement.querySelector('.bomb-emoji');
+                if (existingBomb) {
+                    existingBomb.remove();
+                }
+                return;
+            }
+            
+            // Verificar si el jugador actual es el asesino
+            const currentPlayer = window.gameParams ? window.gameParams.playerNumber : null;
+            const playerRole = window.gameData.roles ? determinePlayerRole(currentPlayer, window.gameData.roles) : 'INVITADO/A';
+            
+            if (playerRole !== 'ASESINO/A') {
+                // No es el asesino, ocultar emoji si existe
+                const existingBomb = roomElement.querySelector('.bomb-emoji');
+                if (existingBomb) {
+                    existingBomb.remove();
+                }
+                return;
+            }
+            
+            // Es el asesino y hay una bomba en esta habitación, mostrar emoji
+            let bombEmoji = roomElement.querySelector('.bomb-emoji');
+            if (!bombEmoji) {
+                bombEmoji = document.createElement('div');
+                bombEmoji.className = 'bomb-emoji';
+                bombEmoji.textContent = '💣';
+                bombEmoji.style.cssText = `
+                    position: absolute;
+                    top: 5px;
+                    left: 5px;
+                    font-size: 20px;
+                    z-index: 5;
+                    animation: bombPulse 2s infinite;
+                `;
+                roomElement.appendChild(bombEmoji);
+            }
+            
+            // Asegurar que el emoji esté visible
+            bombEmoji.style.display = 'block';
+        }
+        
+        // Función para actualizar visibilidad de bombas según rol del jugador
+        function updateBombVisibility(gameData) {
+            const rooms = document.querySelectorAll('.room');
+            const roomNames = [
+                'cocina', 'pasillo_norte', 'habitacion_principal',
+                'comedor', 'centro', 'habitacion_invitados',
+                'torreon_oeste', 'pasillo_sur', 'torreon_este'
+            ];
+            
+            rooms.forEach((room, index) => {
+                const roomName = roomNames[index];
+                if (roomName === 'centro') return;
+                
+                renderBombInRoom(room, roomName);
             });
         }
         
@@ -2892,6 +3181,9 @@
                     console.log(`✅ Habitación ${roomDisplayName} actualizada (sin jugadores)`);
                 }
                 
+                // Mostrar emoji de bomba si existe y es visible para el asesino
+                renderBombInRoom(room, roomName);
+                
                 // Agregar efecto visual de actualización
                 room.classList.add('updated');
                 setTimeout(() => {
@@ -3159,8 +3451,14 @@
             if (buttonText === 'TERMINAR RONDA') {
                 // Activar modo de movimiento
                 try {
-                    await window.FirebaseModular.startRoundEnding(window.gameParams.gameCode);
+                    const result = await window.FirebaseModular.startRoundEnding(window.gameParams.gameCode);
                     console.log('🎯 Modo de movimiento activado');
+                    
+                    // Mostrar alerta si hay muertes pre-movimiento
+                    if (result.preMovementDeaths && result.preMovementDeaths.length > 0) {
+                        const deathsText = result.preMovementDeaths.map(p => `Jugador ${p}`).join(', ');
+                        alert(`💥 ¡BOMBA EXPLOTÓ! Los siguientes jugadores han muerto antes de poder moverse: ${deathsText}`);
+                    }
                 } catch (error) {
                     console.error('❌ Error al terminar la ronda:', error);
                     alert('Error al terminar la ronda. Por favor, intenta de nuevo.');

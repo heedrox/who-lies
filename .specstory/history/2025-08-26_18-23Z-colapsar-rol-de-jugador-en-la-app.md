@@ -1269,3 +1269,89 @@ Ahora el perfil del jugador debería verse mucho más proporcionado y alineado c
 
 ---
 
+_**User (2025-09-15 17:46Z)**_
+
+commit & push
+
+---
+
+_**Assistant**_
+
+¡Perfecto! Voy a hacer commit y push de los cambios implementados.
+
+
+---
+
+```bash
+cd /Users/jordimarti/Development/who-lies && git add .
+```
+
+---
+
+```bash
+git commit -m "feat: Implementar perfil de jugador colapsable con estilo badge
+
+- Añadir funcionalidad de colapsar/expandir información del rol
+- Implementar estilo badge/insignia con borde dorado suave
+- Mover perfil encima del mapa, debajo de los jugadores 1-4
+- Ajustar ancho del perfil para que coincida con el mapa
+- Estado inicial colapsado para proteger privacidad del rol
+- Animaciones suaves para transiciones y hover
+- Icono de usuario y flecha indicadora de estado"
+```
+
+```
+[main 7833edf] feat: Implementar perfil de jugador colapsable con estilo badge
+ 3 files changed, 1500 insertions(+), 18 deletions(-)
+ create mode 100644 .specstory/history/2025-08-26_18-23Z-colapsar-rol-de-jugador-en-la-app.md                                                                   
+ create mode 100644 docs/features/0002_PLAN.md
+```
+
+---
+
+```bash
+git push
+```
+
+```
+Enumerating objects: 17, done.
+Counting objects: 100% (17/17), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (10/10), 12.76 KiB | 3.19 MiB/s, done.
+Total 10 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To github.com:heedrox/who-lies.git
+   adb6af7..7833edf  main -> main
+```
+
+---
+
+¡Excelente! ✅ **Commit y push completados exitosamente**
+
+## 📝 **Resumen del Commit:**
+
+**Hash:** `7833edf`  
+**Mensaje:** `feat: Implementar perfil de jugador colapsable con estilo badge`
+
+### **Archivos Modificados:**
+- **3 archivos cambiados**
+- **1,500 inserciones, 18 eliminaciones**
+- **2 archivos nuevos creados**
+
+### 📁 **Archivos Nuevos:**
+- `docs/features/0002_PLAN.md` - Plan técnico de la funcionalidad
+- `.specstory/history/2025-08-26_18-23Z-colapsar-rol-de-jugador-en-la-app.md` - Historial de especificaciones
+
+### ✨ **Funcionalidades Implementadas:**
+- ✅ Perfil de jugador colapsable/expandible
+- ✅ Estilo badge/insignia con borde dorado suave
+- ✅ Posicionamiento encima del mapa
+- ✅ Ancho ajustado al mapa de habitaciones
+- ✅ Estado inicial colapsado para privacidad
+- ✅ Animaciones suaves y feedback visual
+
+¡Los cambios ya están disponibles en el repositorio remoto! 🚀
+
+---
+
