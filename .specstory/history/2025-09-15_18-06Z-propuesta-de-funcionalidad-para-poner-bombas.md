@@ -3758,3 +3758,69 @@ Entendido. Me siento agradecido por la colaboración fluida.
 
 ---
 
+_**User (2025-09-20 07:16Z)**_
+
+/commit 
+
+--- Cursor Command: commit.md ---
+Haz commit y push directamente.
+
+El mensaje debe ser la continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas"; pero no debe incluir la frase "este commit hace que".
+
+Solo usa una frase. 
+
+Utiliza también "feat:" o "bugfix" o "refactor" al principio del mensaje.
+
+El commit debe ser una única linea.
+--- End Command ---
+
+---
+
+_**Assistant**_
+
+```bash
+git add -A && git commit -m "feat: el emoji de bomba se posiciona correctamente en las habitaciones desde el inicio" && git push
+```
+
+```
+[main a4259c2] feat: el emoji de bomba se posiciona correctamente en las habitaciones desde el inicio                                                           
+ 2 files changed, 95 insertions(+), 2 deletions(-)
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 1.46 KiB | 1.46 MiB/s, done.
+Total 7 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:heedrox/who-lies.git
+   38a5e12..a4259c2  main -> main
+```
+
+---
+
+_**User (2025-09-20 07:16Z)**_
+
+/commit 
+
+--- Cursor Command: commit.md ---
+Haz commit y push directamente.
+
+Para obtener el mensaje, revisa las diferencias existentes en los ficheros (puedes hacer un git diff --cached), y complementa lo que se ha hecho (el what) con la intención (el why) a través de la conversación actual.
+
+El mensaje debe ser la continuación de la siguiente frase: "este commit hace que...", y usa verbo presente, por ejemplo "el asesino puede lanzar bombas"; pero no debe incluir la frase "este commit hace que".
+
+Solo usa una frase. 
+
+Utiliza también "feat:" o "bugfix" o "refactor" al principio del mensaje.
+
+El commit debe ser una única linea.
+--- End Command ---
+
+---
+
+_**Assistant**_
+
+
+
+---
+
